@@ -166,6 +166,17 @@ const DOUBAO_WEB_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+export const CLAUDE_WEB_BASE_URL = "https://claude.ai";
+export const CLAUDE_WEB_DEFAULT_MODEL_ID = "claude-3-5-sonnet-20241022";
+const CLAUDE_WEB_DEFAULT_CONTEXT_WINDOW = 200000;
+const CLAUDE_WEB_DEFAULT_MAX_TOKENS = 8192;
+const CLAUDE_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
 const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 const NVIDIA_DEFAULT_MODEL_ID = "nvidia/llama-3.1-nemotron-70b-instruct";
 const NVIDIA_DEFAULT_CONTEXT_WINDOW = 131072;
@@ -759,6 +770,64 @@ export async function buildDoubaoWebProvider(params?: {
   };
 }
 
+export async function discoverClaudeWebModels(params?: {
+  apiKey?: string;
+}): Promise<ModelDefinitionConfig[]> {
+  if (params?.apiKey) {
+    try {
+      const auth = JSON.parse(params.apiKey);
+      const { ClaudeWebClientBrowser } = await import("../providers/claude-web-client-browser.js");
+      const client = new ClaudeWebClientBrowser(auth);
+      const models = (await client.discoverModels()) as ModelDefinitionConfig[];
+      await client.close();
+      return models;
+    } catch (e) {
+      console.warn("[ClaudeWeb] Dynamic discovery failed, falling back to built-in list:", e);
+    }
+  }
+
+  return [
+    {
+      id: "claude-3-5-sonnet-20241022",
+      name: "Claude 3.5 Sonnet (Web)",
+      reasoning: false,
+      input: ["text", "image"],
+      cost: CLAUDE_WEB_DEFAULT_COST,
+      contextWindow: CLAUDE_WEB_DEFAULT_CONTEXT_WINDOW,
+      maxTokens: CLAUDE_WEB_DEFAULT_MAX_TOKENS,
+    },
+    {
+      id: "claude-3-opus-20240229",
+      name: "Claude 3 Opus (Web)",
+      reasoning: false,
+      input: ["text", "image"],
+      cost: CLAUDE_WEB_DEFAULT_COST,
+      contextWindow: CLAUDE_WEB_DEFAULT_CONTEXT_WINDOW,
+      maxTokens: CLAUDE_WEB_DEFAULT_MAX_TOKENS,
+    },
+    {
+      id: "claude-3-haiku-20240307",
+      name: "Claude 3 Haiku (Web)",
+      reasoning: false,
+      input: ["text", "image"],
+      cost: CLAUDE_WEB_DEFAULT_COST,
+      contextWindow: CLAUDE_WEB_DEFAULT_CONTEXT_WINDOW,
+      maxTokens: CLAUDE_WEB_DEFAULT_MAX_TOKENS,
+    },
+  ];
+}
+
+export async function buildClaudeWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  const models = await discoverClaudeWebModels(params);
+  return {
+    baseUrl: CLAUDE_WEB_BASE_URL,
+    api: "claude-web",
+    models,
+  };
+}
+
 export function buildNvidiaProvider(): ProviderConfig {
   return {
     baseUrl: NVIDIA_BASE_URL,
@@ -1005,6 +1074,15 @@ export async function resolveImplicitProviders(params: {
   providers["doubao-web"] = {
     ...(await buildDoubaoWebProvider({ apiKey: doubaoWebKey })),
     apiKey: doubaoWebKey,
+  };
+
+  const claudeWebKey =
+    resolveEnvApiKeyVarName("claude-web") ??
+    resolveApiKeyFromProfiles({ provider: "claude-web", store: authStore });
+
+  providers["claude-web"] = {
+    ...(await buildClaudeWebProvider({ apiKey: claudeWebKey })),
+    apiKey: claudeWebKey,
   };
 
   const doubaoProxyKey =

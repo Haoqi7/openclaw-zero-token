@@ -7,7 +7,8 @@ export type ModelApi =
   | "bedrock-converse-stream"
   | "ollama"
   | "deepseek-web"
-  | "doubao-web";
+  | "doubao-web"
+  | "claude-web";
 
 export type ModelCompatConfig = {
   supportsStore?: boolean;

@@ -3,6 +3,7 @@ import type { RuntimeEnv } from "../runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import { applyAuthChoiceAnthropic } from "./auth-choice.apply.anthropic.js";
 import { applyAuthChoiceApiProviders } from "./auth-choice.apply.api-providers.js";
+import { applyAuthChoiceClaudeWeb } from "./auth-choice.apply.claude-web.js";
 import { applyAuthChoiceCopilotProxy } from "./auth-choice.apply.copilot-proxy.js";
 import { applyAuthChoiceDeepseekWeb } from "./auth-choice.apply.deepseek-web.js";
 import { applyAuthChoiceDoubaoProxy } from "./auth-choice.apply.doubao-proxy.js";
@@ -63,6 +64,7 @@ export async function applyAuthChoice(
     applyAuthChoiceDeepseekWeb,
     applyAuthChoiceDoubaoProxy,
     applyAuthChoiceDoubaoWeb,
+    applyAuthChoiceClaudeWeb,
     applyAuthChoiceXAI,
   ];
 

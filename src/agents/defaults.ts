@@ -6,6 +6,7 @@ export const DEFAULT_CONTEXT_TOKENS = 200_000;
 export const PROVIDER_DEFAULTS: Record<string, { provider: string; model: string }> = {
   "deepseek-web": { provider: "deepseek-web", model: "deepseek-chat" },
   "doubao-web": { provider: "doubao-web", model: "doubao-seed-2.0" },
+  "claude-web": { provider: "claude-web", model: "claude-3-5-sonnet-20241022" },
 };
 
 const FALLBACK_PROVIDER = "deepseek-web";
@@ -16,7 +17,7 @@ export function detectDefaultProvider(): string {
     const agentDir = resolveOpenClawAgentDir();
     const store = loadAuthProfileStore(agentDir, { allowKeychainPrompt: false });
     
-    const priorityOrder = ["doubao-web", "deepseek-web"];
+    const priorityOrder = ["doubao-web", "deepseek-web", "claude-web"];
     
     for (const provider of priorityOrder) {
       const profiles = listProfilesForProvider(store, provider);

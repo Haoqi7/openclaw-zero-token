@@ -51,6 +51,7 @@ export type AuthChoice =
   | "deepseek-web"
   | "doubao-web"
   | "doubao-proxy"
+  | "claude-web"
   | "custom-api-key"
   | "skip";
 export type AuthChoiceGroupId =
@@ -81,6 +82,7 @@ export type AuthChoiceGroupId =
   | "siliconflow-cn"
   | "deepseek-web"
   | "doubao-web"
+  | "claude-web"
   | "custom";
 export type GatewayAuthChoice = "token" | "password";
 export type ResetScope = "config" | "config+creds+sessions" | "full";

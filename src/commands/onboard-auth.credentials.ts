@@ -281,6 +281,8 @@ export {
   DEEPSEEK_WEB_DEFAULT_MODEL_REF,
 } from "./onboard-auth.models.js";
 
+export const CLAUDE_WEB_DEFAULT_MODEL_REF = "claude-web/claude-3-5-sonnet-20241022";
+
 export async function setSiliconFlowGlobalApiKey(key: string, agentDir?: string) {
   upsertAuthProfile({
     profileId: "siliconflow:default",
@@ -359,6 +361,22 @@ export async function setDoubaoWebCookie(
     credential: {
       type: "api_key",
       provider: "doubao-web",
+      key,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setClaudeWebCookie(
+  options: { sessionKey: string; cookie?: string; userAgent?: string; organizationId?: string },
+  agentDir?: string,
+) {
+  const key = JSON.stringify(options);
+  upsertAuthProfile({
+    profileId: "claude-web:default",
+    credential: {
+      type: "api_key",
+      provider: "claude-web",
       key,
     },
     agentDir: resolveAuthAgentDir(agentDir),

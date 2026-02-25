@@ -75,11 +75,19 @@ apps/ios/*.mobileprovision
 # Local untracked files
 .local/
 .openclaw-state/
+.kiro/
 docs/.local/
 IDENTITY.md
 USER.md
 .tgz
 .idea
+
+# Gateway PID file
+.gateway.pid
+
+# Claude cookie files (sensitive)
+claudecookie.txt
+*.cookie.txt
 
 # local tooling
 .serena/

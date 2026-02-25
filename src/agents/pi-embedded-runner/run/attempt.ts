@@ -32,6 +32,7 @@ import {
 } from "../../channel-tools.js";
 import { createDeepseekWebStreamFn } from "../../deepseek-web-stream.js";
 import { createDoubaoWebStreamFn } from "../../doubao-web-stream.js";
+import { createClaudeWebStreamFn } from "../../claude-web-stream.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../defaults.js";
 import { resolveOpenClawDocsPath } from "../../docs-path.js";
 import { isTimeoutError } from "../../failover-error.js";
@@ -642,6 +643,9 @@ export async function runEmbeddedAttempt(
       } else if (params.model.api === "doubao-web") {
         const cookie = (await params.authStorage.getApiKey("doubao-web")) || "";
         activeSession.agent.streamFn = createDoubaoWebStreamFn(cookie) as StreamFn;
+      } else if (params.model.api === "claude-web") {
+        const auth = (await params.authStorage.getApiKey("claude-web")) || "";
+        activeSession.agent.streamFn = createClaudeWebStreamFn(auth) as StreamFn;
       } else {
         // Force a stable streamFn reference so vitest can reliably mock @mariozechner/pi-ai.
         activeSession.agent.streamFn = streamSimple;

@@ -184,6 +184,12 @@ const AUTH_CHOICE_GROUP_DEFS: {
     hint: "doubao-proxy (recommended) or direct Browser",
     choices: ["doubao-proxy", "doubao-web"],
   },
+  {
+    value: "claude-web",
+    label: "Claude Web",
+    hint: "Free access via browser session",
+    choices: ["claude-web"],
+  },
 ];
 
 const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
@@ -344,6 +350,11 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
     value: "doubao-web",
     label: "Doubao Browser (direct)",
     hint: "Access Doubao via logged-in session (experimental)",
+  },
+  {
+    value: "claude-web",
+    label: "Claude Web (Free)",
+    hint: "Access Claude via browser session cookie",
   },
   { value: "custom-api-key", label: "Custom Provider" },
 ];

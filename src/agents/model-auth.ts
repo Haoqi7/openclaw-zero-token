@@ -320,6 +320,7 @@ export function resolveEnvApiKey(provider: string): EnvApiKeyResult | null {
     "deepseek-web": "DEEPSEEK_WEB_COOKIE",
     "doubao-web": "DOUBAO_WEB_COOKIE",
     "doubao-proxy": "DOUBAO_PROXY_SESSIONID",
+    "claude-web": "CLAUDE_WEB_COOKIE",
   };
   const envVar = envMap[normalized];
   if (!envVar) {

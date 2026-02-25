@@ -27,7 +27,7 @@ OpenClaw Zero Token is a fork of [OpenClaw](https://github.com/openclaw/openclaw
 |----------|--------|--------|
 | DeepSeek | ✅ **Currently Supported** | deepseek-chat, deepseek-reasoner |
 | Doubao (豆包) | ✅ **Currently Supported** | doubao (via doubao-free-api) |
-| Claude Web | 🔜 Coming Soon | - |
+| Claude Web | ✅ **Currently Supported** | claude-3-5-sonnet-20241022, claude-3-opus-20240229, claude-3-haiku-20240307 |
 | ChatGPT Web | 🔜 Coming Soon | - |
 
 > **Note:** Doubao requires [doubao-free-api](https://github.com/linuxhsj/doubao-free-api) proxy. See "Doubao Implementation & Deployment" below for details.
@@ -242,6 +242,58 @@ If SSE stream is returned, the proxy is working.
 - pnpm >= 9.0.0
 - Chrome Browser
 
+### Script Overview
+
+This project provides several helper scripts for different use cases:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Script Relationships                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  First Time Setup:                                                  │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ run.sh (One-click setup: build + configure + start)          │  │
+│  │    │                                                          │  │
+│  │    ├─→ pnpm build              # Compile project             │  │
+│  │    │                                                          │  │
+│  │    ├─→ onboard.sh               # Configuration wizard       │  │
+│  │    │       └─→ Select AI provider (DeepSeek/Doubao/Claude)  │  │
+│  │    │           Configure authentication                      │  │
+│  │    │           Save to .openclaw-state/openclaw.json         │  │
+│  │    │                                                          │  │
+│  │    └─→ server.sh start          # Start Gateway (port 3001)  │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  Testing Claude Web:                                                │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ test-all.sh (Test Claude Web functionality)                  │  │
+│  │    │                                                          │  │
+│  │    ├─→ start-chrome-debug.sh   # Start Chrome debug mode    │  │
+│  │    ├─→ test-chrome-connection.sh # Verify connection        │  │
+│  │    ├─→ server.sh stop           # Stop Gateway              │  │
+│  │    ├─→ Start Gateway            # Restart Gateway           │  │
+│  │    └─→ test-claude.sh           # Test Claude API           │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+│  Daily Usage:                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │ server.sh [start|stop|restart|status]                        │  │
+│  │    └─→ Manage Gateway service                                │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Script Comparison:**
+
+| Script | Purpose | When to Use | Requires Build |
+|--------|---------|-------------|----------------|
+| `run.sh` | Build + Configure + Start | First time setup | ✅ Auto-builds |
+| `onboard.sh` | Configuration wizard | Initial config or reconfigure | ❌ Build first |
+| `test-all.sh` | Test Claude Web | Verify Claude functionality | ❌ Build & configure first |
+| `server.sh` | Manage Gateway service | Daily start/stop/restart | ❌ Build & configure first |
+
 ### Installation
 
 ```bash
@@ -251,15 +303,35 @@ cd openclaw-zero-token
 
 # Install dependencies
 pnpm install
+```
 
-# Build
+### Option 1: One-Click Setup (Recommended for First Time)
+
+```bash
+# This will: build + configure + start
+./run.sh
+```
+
+The script will:
+1. Compile the project (`pnpm build`)
+2. Run configuration wizard (`onboard.sh`)
+3. Start Gateway service (`server.sh start`)
+
+### Option 2: Step-by-Step Setup
+
+#### Step 1: Build
+
+```bash
 pnpm build
 ```
 
-### Configure DeepSeek Web Authentication
+#### Step 2: Configure Authentication
 
 ```bash
 # Run setup wizard
+./onboard.sh
+
+# Or use the compiled version
 node openclaw.mjs onboard
 
 # Select authentication method
@@ -271,10 +343,13 @@ node openclaw.mjs onboard
     Manual Paste                   # Manually paste credentials
 ```
 
-### Start Gateway
+#### Step 3: Start Gateway
 
 ```bash
-# Start the service
+# Using helper script (recommended)
+./server.sh start
+
+# Or directly
 node openclaw.mjs gateway
 
 # Access Web UI
@@ -306,6 +381,236 @@ curl http://127.0.0.1:3001/v1/chat/completions \
 
 ```bash
 # Interactive terminal
+node openclaw.mjs tui
+```
+
+---
+
+## Claude Web Usage
+
+> **Note:** Before testing Claude Web, make sure you have completed the initial setup using `run.sh` or `onboard.sh` to configure Claude Web authentication. See [Script Overview](#script-overview) for the relationship between different scripts.
+
+### Quick Start (One-Click Test)
+
+```bash
+# One-click test script (recommended)
+./test-all.sh
+
+# Features:
+# - Automatically starts Chrome in debug mode
+# - Opens Claude.ai and waits for login
+# - Tests connection and API
+# - Opens Web UI automatically
+```
+
+**What test-all.sh does:** See the [Script Flow](#testing-scripts) in the Testing Scripts section below.
+
+### Manual Setup
+
+#### Step 1: Start Chrome Debug Mode
+
+```bash
+# Start Chrome with remote debugging
+./start-chrome-debug.sh
+
+# Chrome will open with:
+# - Debug port: 9222
+# - Separate user profile (won't affect your daily Chrome)
+# - Auto-navigate to https://claude.ai/new
+```
+
+#### Step 2: Login to Claude
+
+1. Wait for Claude.ai to load in the opened Chrome window
+2. Login with your Claude account (should auto-login if previously logged in)
+3. Keep this Chrome window open
+
+#### Step 3: Start Gateway
+
+```bash
+# Start the gateway server
+./server.sh start
+
+# Or manually:
+node dist/index.mjs gateway
+```
+
+#### Step 4: Test
+
+```bash
+# Test via CLI
+./test-claude.sh "Hello, Claude!"
+
+# Or open Web UI
+# Browser: http://127.0.0.1:3001/#token=62b791625fa441be036acd3c206b7e14e2bb13c803355823
+```
+
+### How It Works
+
+**Architecture:**
+```
+User Request
+    ↓
+OpenClaw Gateway (Port 3001)
+    ↓
+ClaudeWebClientBrowser (Playwright)
+    ↓
+Chrome Debug Mode (Port 9222)
+    ↓
+Claude.ai API (Browser Context)
+    ↓
+Response (SSE Stream)
+```
+
+**Key Features:**
+- ✅ **Cloudflare Bypass**: Requests sent in real browser context
+- ✅ **Cookie Authentication**: Uses browser's session cookies
+- ✅ **No API Token**: Completely free, no credit card required
+- ✅ **Streaming Support**: Real-time response streaming
+- ✅ **Separate Instance**: Independent Chrome profile, won't affect daily usage
+
+### Configuration
+
+The configuration is stored in `.openclaw-state/openclaw.json`:
+
+```json
+{
+  "browser": {
+    "attachOnly": true,
+    "defaultProfile": "my-chrome",
+    "profiles": {
+      "my-chrome": {
+        "cdpUrl": "http://127.0.0.1:9222",
+        "color": "#4285F4"
+      }
+    }
+  },
+  "models": {
+    "providers": {
+      "claude-web": {
+        "baseUrl": "https://claude.ai",
+        "api": "claude-web",
+        "models": [
+          {
+            "id": "claude-3-5-sonnet-20241022",
+            "name": "Claude 3.5 Sonnet (Web)"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+### API Calls
+
+```bash
+# Call via Gateway Token
+curl http://127.0.0.1:3001/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_GATEWAY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-web/claude-3-5-sonnet-20241022",
+    "messages": [{"role": "user", "content": "Hello, Claude!"}]
+  }'
+```
+
+### Available Models
+
+Claude Web supports the following models with automatic ID mapping:
+
+| Configuration ID | Claude Web API ID | Model Name | Recommended |
+|------------------|-------------------|------------|-------------|
+| `claude-3-5-sonnet-20241022` | `claude-sonnet-4-6` | Claude 3.5 Sonnet | ✅ Yes |
+| `claude-3-opus-20240229` | `claude-opus-4-6` | Claude 3 Opus | - |
+| `claude-3-haiku-20240307` | `claude-haiku-4-6` | Claude 3 Haiku | - |
+
+**How it works:**
+- You use the standard Anthropic model ID (e.g., `claude-3-5-sonnet-20241022`) in your configuration and API calls
+- The system automatically converts it to Claude Web's internal format (e.g., `claude-sonnet-4-6`)
+- This ensures compatibility with standard Anthropic API naming conventions
+
+**Example:**
+```bash
+# You call with standard ID
+curl http://127.0.0.1:3001/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_GATEWAY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-web/claude-3-5-sonnet-20241022",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+
+# System automatically converts to: claude-sonnet-4-6
+```
+
+### Testing Scripts
+
+```bash
+# One-click test (recommended)
+./test-all.sh
+
+# Test Chrome connection
+./test-chrome-connection.sh
+
+# Test Claude API with custom message
+./test-claude.sh "Your question here"
+
+# Test with random message (avoid detection)
+./test-claude.sh "$(shuf -n 1 test-messages.txt)"
+```
+
+**test-all.sh Script Flow:**
+
+```
+test-all.sh
+    │
+    ├─→ start-chrome-debug.sh      # Start Chrome in debug mode (port 9222)
+    │
+    ├─→ test-chrome-connection.sh  # Verify Chrome debug connection
+    │
+    ├─→ server.sh stop              # Stop existing Gateway
+    │
+    ├─→ Start Gateway               # Launch Gateway service
+    │
+    └─→ test-claude.sh              # Test Claude API with message
+```
+
+The `test-all.sh` script automates the entire testing process, making it easy to verify your Claude Web setup with a single command.
+
+### Troubleshooting
+
+**Chrome connection failed:**
+```bash
+# Check if Chrome is running
+ps aux | grep "chrome.*9222"
+
+# Restart Chrome
+pkill -f "chrome.*9222"
+./start-chrome-debug.sh
+```
+
+**No response from Claude:**
+- Ensure Chrome window is open with Claude.ai loaded
+- Check Gateway logs: `tail -50 /tmp/openclaw-gateway.log`
+- Restart Gateway: `./server.sh restart`
+
+**Model not available (403):**
+- Model IDs are automatically mapped, no action needed
+- If issue persists, check your Claude account subscription
+
+### Technical Details
+
+For detailed technical documentation, see [CLAUDE_WEB_IMPLEMENTATION.md](CLAUDE_WEB_IMPLEMENTATION.md):
+- System architecture
+- Cloudflare bypass principles
+- SSE streaming response parsing
+- Code structure and modifications
+
+### CLI Mode
+
+```bash
+# Interactive terminal with Claude
 node openclaw.mjs tui
 ```
 
@@ -365,11 +670,11 @@ node openclaw.mjs tui
 ### Current Focus
 - ✅ DeepSeek Web authentication (stable)
 - ✅ Doubao via doubao-free-api
+- ✅ Claude Web authentication (stable)
 - 🔧 Improving credential capture reliability
 - 📝 Documentation improvements
 
 ### Planned Features
-- 🔜 Claude Web authentication support
 - 🔜 ChatGPT Web authentication support
 - 🔜 Auto-refresh for expired sessions
 

@@ -75,6 +75,58 @@ start_gateway() {
   fi
 }
 
+update_cookie() {
+  echo "更新 Claude Web Cookie..."
+  
+  if [ -z "$2" ]; then
+    echo "错误：请提供完整的 cookie 字符串"
+    echo "用法: $0 update-cookie \"完整的cookie字符串\""
+    echo ""
+    echo "从浏览器获取 cookie："
+    echo "1. 打开 https://claude.ai"
+    echo "2. 按 F12 打开开发者工具"
+    echo "3. 切换到 Network 标签"
+    echo "4. 发送一条消息"
+    echo "5. 找到 completion 请求"
+    echo "6. 复制 Request Headers 中的完整 cookie 值"
+    exit 1
+  fi
+  
+  COOKIE_STRING="$2"
+  AUTH_FILE="$STATE_DIR/agents/main/agent/auth-profiles.json"
+  
+  # 提取 sessionKey
+  SESSION_KEY=$(echo "$COOKIE_STRING" | grep -oP 'sessionKey=\K[^;]+' || echo "")
+  
+  if [ -z "$SESSION_KEY" ]; then
+    echo "错误：cookie 中未找到 sessionKey"
+    exit 1
+  fi
+  
+  # 创建 JSON 对象
+  JSON_DATA=$(cat <<EOF
+{
+  "sessionKey": "$SESSION_KEY",
+  "cookie": "$COOKIE_STRING",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
+EOF
+)
+  
+  # 更新 auth-profiles.json
+  if [ -f "$AUTH_FILE" ]; then
+    jq --arg key "$JSON_DATA" '.profiles["claude-web:default"].key = $key' "$AUTH_FILE" > "$AUTH_FILE.tmp" && mv "$AUTH_FILE.tmp" "$AUTH_FILE"
+    echo "✓ Claude Web cookie 已更新"
+    echo "✓ SessionKey: ${SESSION_KEY:0:50}..."
+    echo ""
+    echo "现在重启服务："
+    echo "  $0 restart"
+  else
+    echo "错误：auth-profiles.json 不存在，请先运行 ./onboard.sh"
+    exit 1
+  fi
+}
+
 case "${1:-start}" in
   start)
     stop_gateway
@@ -106,8 +158,21 @@ case "${1:-start}" in
       fi
     fi
     ;;
+  update-cookie)
+    update_cookie "$@"
+    ;;
   *)
-    echo "用法: $0 {start|stop|restart|status}"
+    echo "用法: $0 {start|stop|restart|status|update-cookie}"
+    echo ""
+    echo "命令说明："
+    echo "  start         - 启动 Gateway 服务"
+    echo "  stop          - 停止 Gateway 服务"
+    echo "  restart       - 重启 Gateway 服务"
+    echo "  status        - 查看服务状态"
+    echo "  update-cookie - 更新 Claude Web cookie"
+    echo ""
+    echo "示例："
+    echo "  $0 update-cookie \"sessionKey=sk-ant-...; anthropic-device-id=...\""
     exit 1
     ;;
 esac

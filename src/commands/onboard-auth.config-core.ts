@@ -644,10 +644,38 @@ export function applyDoubaoProxyProviderConfig(
   });
 }
 
-export function applyDoubaoProxyConfig(
+export async function applyDoubaoProxyConfig(
   cfg: OpenClawConfig,
   params?: { baseUrl?: string; modelId?: string },
 ): OpenClawConfig {
   const next = applyDoubaoProxyProviderConfig(cfg, params);
   return applyAgentDefaultModelPrimary(next, `doubao-proxy/${params?.modelId ?? DOUBAO_PROXY_DEFAULT_MODEL_ID}`);
 }
+
+export const CLAUDE_WEB_BASE_URL = "https://claude.ai";
+export const CLAUDE_WEB_DEFAULT_MODEL_ID = "claude-3-5-sonnet-20241022";
+export const CLAUDE_WEB_DEFAULT_MODEL_REF = `claude-web/${CLAUDE_WEB_DEFAULT_MODEL_ID}`;
+
+export async function applyClaudeWebProviderConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
+  const models = { ...cfg.agents?.defaults?.models };
+  models[CLAUDE_WEB_DEFAULT_MODEL_REF] = {
+    ...models[CLAUDE_WEB_DEFAULT_MODEL_REF],
+    alias: models[CLAUDE_WEB_DEFAULT_MODEL_REF]?.alias ?? "Claude Web",
+  };
+  const { buildClaudeWebProvider } = await import("../agents/models-config.providers.js");
+  const defaultProvider = await buildClaudeWebProvider();
+  return applyProviderConfigWithDefaultModels(cfg, {
+    agentModels: models,
+    providerId: "claude-web",
+    api: "claude-web",
+    baseUrl: defaultProvider.baseUrl,
+    defaultModels: defaultProvider.models ?? [],
+    defaultModelId: CLAUDE_WEB_DEFAULT_MODEL_ID,
+  });
+}
+
+export async function applyClaudeWebConfig(cfg: OpenClawConfig): Promise<OpenClawConfig> {
+  const next = await applyClaudeWebProviderConfig(cfg);
+  return applyAgentDefaultModelPrimary(next, CLAUDE_WEB_DEFAULT_MODEL_REF);
+}
+
