@@ -358,7 +358,49 @@ open http://127.0.0.1:3001
 
 ### Web UI
 
-Visit `http://127.0.0.1:3001` and start chatting with DeepSeek models directly.
+Visit `http://127.0.0.1:3001` and start chatting with AI models directly.
+
+#### Switching Models
+
+You can switch between different AI models using the `/model` command in the chat interface:
+
+```bash
+# Switch to Claude Web
+/model claude-web
+
+# Switch to Doubao
+/model doubao-web
+
+# Switch to DeepSeek
+/model deepseek-web
+
+# Or specify a specific model
+/model claude-web/claude-3-5-sonnet-20241022
+/model doubao-web/doubao-seed-2.0
+/model deepseek-web/deepseek-chat
+```
+
+#### Viewing Available Models
+
+To see all configured models, use the `/models` command:
+
+```bash
+/models
+```
+
+This will display:
+- All available providers (claude-web, doubao-web, deepseek-web, etc.)
+- Models under each provider
+- Current active model
+- Model aliases and configurations
+
+**Example output:**
+```
+Model                                      Input      Ctx      Local Auth  Tags
+doubao-web/doubao-seed-2.0                 text       63k      no    no    default,configured,alias:Doubao Browser
+claude-web/claude-3-5-sonnet-20241022      text+image 195k     no    no    configured,alias:Claude Web
+deepseek-web/deepseek-chat                 text       64k      no    no    configured
+```
 
 ### API Calls
 

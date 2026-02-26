@@ -373,7 +373,49 @@ open http://127.0.0.1:3001
 
 ### Web UI
 
-访问 `http://127.0.0.1:3001`，在聊天界面直接使用 DeepSeek 模型。
+访问 `http://127.0.0.1:3001`，在聊天界面直接使用 AI 模型。
+
+#### 切换模型
+
+在聊天界面中使用 `/model` 命令可以切换不同的 AI 模型：
+
+```bash
+# 切换到 Claude Web
+/model claude-web
+
+# 切换到豆包
+/model doubao-web
+
+# 切换到 DeepSeek
+/model deepseek-web
+
+# 或者指定具体的模型
+/model claude-web/claude-3-5-sonnet-20241022
+/model doubao-web/doubao-seed-2.0
+/model deepseek-web/deepseek-chat
+```
+
+#### 查看可用模型
+
+使用 `/models` 命令可以查看所有已配置的模型：
+
+```bash
+/models
+```
+
+这将显示：
+- 所有可用的提供商（claude-web、doubao-web、deepseek-web 等）
+- 每个提供商下的模型列表
+- 当前激活的模型
+- 模型别名和配置信息
+
+**示例输出：**
+```
+Model                                      Input      Ctx      Local Auth  Tags
+doubao-web/doubao-seed-2.0                 text       63k      no    no    default,configured,alias:Doubao Browser
+claude-web/claude-3-5-sonnet-20241022      text+image 195k     no    no    configured,alias:Claude Web
+deepseek-web/deepseek-chat                 text       64k      no    no    configured
+```
 
 ### API 调用
 
