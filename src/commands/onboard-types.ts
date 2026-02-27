@@ -59,6 +59,7 @@ export type AuthChoice =
   | "grok-web"
   | "z-web"
   | "manus-web"
+  | "manus-api-key"
   | "custom-api-key"
   | "skip";
 export type AuthChoiceGroupId =
@@ -98,6 +99,7 @@ export type AuthChoiceGroupId =
   | "grok-web"
   | "z-web"
   | "manus-web"
+  | "manus-api"
   | "custom";
 export type GatewayAuthChoice = "token" | "password";
 export type ResetScope = "config" | "config+creds+sessions" | "full";
@@ -159,6 +161,7 @@ export type OnboardOptions = {
   grokWebCookie?: string;
   zWebCookie?: string;
   manusWebCookie?: string;
+  manusApiKey?: string;
   customBaseUrl?: string;
   customApiKey?: string;
   customModelId?: string;

@@ -41,6 +41,7 @@ import { createGeminiWebStreamFn } from "../../gemini-web-stream.js";
 import { createGrokWebStreamFn } from "../../grok-web-stream.js";
 import { createZWebStreamFn } from "../../z-web-stream.js";
 import { createManusWebStreamFn } from "../../manus-web-stream.js";
+import { createManusApiStreamFn } from "../../manus-api-stream.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../defaults.js";
 import { resolveOpenClawDocsPath } from "../../docs-path.js";
 import { isTimeoutError } from "../../failover-error.js";
@@ -678,6 +679,9 @@ export async function runEmbeddedAttempt(
       } else if (params.model.api === "manus-web") {
         const auth = (await params.authStorage.getApiKey("manus-web")) || "";
         activeSession.agent.streamFn = createManusWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "manus-api") {
+        const apiKey = (await params.authStorage.getApiKey("manus-api")) || "";
+        activeSession.agent.streamFn = createManusApiStreamFn(apiKey) as StreamFn;
       } else {
         // Force a stable streamFn reference so vitest can reliably mock @mariozechner/pi-ai.
         activeSession.agent.streamFn = streamSimple;

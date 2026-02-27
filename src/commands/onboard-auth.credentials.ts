@@ -488,6 +488,18 @@ export async function setZWebCookie(
   });
 }
 
+export async function setManusApiKey(key: string, agentDir?: string) {
+  upsertAuthProfile({
+    profileId: "manus-api:default",
+    credential: {
+      type: "api_key",
+      provider: "manus-api",
+      key,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
 export async function setManusWebCookie(
   options: { cookie: string },
   agentDir?: string,

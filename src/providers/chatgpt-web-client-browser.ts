@@ -85,17 +85,18 @@ export class ChatGPTWebClientBrowser {
       }).then((b) => b.contexts()[0]);
 
       const pages = this.browser.pages();
-      let chatgptPage = pages.find(p => p.url().includes('chatgpt.com'));
-      
+      const chatgptPage = pages.find((p) => p.url().includes("chatgpt.com"));
+
       if (chatgptPage) {
         console.log(`[ChatGPT Web Browser] Found existing ChatGPT page: ${chatgptPage.url()}`);
         this.page = chatgptPage;
       } else {
         console.log(`[ChatGPT Web Browser] No ChatGPT page found, creating new one...`);
         this.page = await this.browser.newPage();
-        await this.page.goto('https://chatgpt.com/', { waitUntil: 'domcontentloaded' });
+        await this.page.goto("https://chatgpt.com/", { waitUntil: "load" });
       }
-      
+
+      await this.ensureChatGptPageReady();
       console.log(`[ChatGPT Web Browser] Connected to existing Chrome successfully`);
     } else {
       this.running = await launchOpenClawChrome(browserConfig, profile);
@@ -120,21 +121,56 @@ export class ChatGPTWebClientBrowser {
       }).then((b) => b.contexts()[0]);
 
       this.page = this.browser.pages()[0] || (await this.browser.newPage());
+      if (!this.page.url().includes("chatgpt.com")) {
+        await this.page.goto("https://chatgpt.com/", { waitUntil: "load" });
+      }
+      await this.ensureChatGptPageReady();
     }
 
-    const cookies = this.cookie.split(";").map((c) => {
-      const [name, ...valueParts] = c.trim().split("=");
-      return {
-        name: name.trim(),
-        value: valueParts.join("=").trim(),
-        domain: ".chatgpt.com",
-        path: "/",
-      };
-    });
-
-    await this.browser.addCookies(cookies);
+    const cookieStr = typeof this.cookie === "string" ? this.cookie.trim() : "";
+    if (cookieStr && !cookieStr.startsWith("{")) {
+      const rawCookies = cookieStr.split(";").map((c) => {
+        const [name, ...valueParts] = c.trim().split("=");
+        return {
+          name: name?.trim() ?? "",
+          value: valueParts.join("=").trim(),
+          domain: ".chatgpt.com",
+          path: "/",
+        };
+      });
+      const cookies = rawCookies.filter((c) => c.name.length > 0);
+      if (cookies.length > 0) {
+        try {
+          await this.browser.addCookies(cookies);
+        } catch (err) {
+          console.warn(
+            `[ChatGPT Web Browser] addCookies failed (page may already have session): ${err instanceof Error ? err.message : String(err)}`
+          );
+        }
+      }
+    }
 
     return { browser: this.browser, page: this.page };
+  }
+
+  /** 确保 chatgpt.com 页面已加载且 oaistatic Sentinel 脚本已就绪 */
+  private async ensureChatGptPageReady() {
+    if (!this.page) return;
+    if (!this.page.url().includes("chatgpt.com")) {
+      await this.page.goto("https://chatgpt.com/", { waitUntil: "load" });
+    }
+    try {
+      await this.page.waitForFunction(
+        () => {
+          const scripts = Array.from(document.scripts);
+          return scripts.some((s) => s.src?.includes("oaistatic.com") && s.src?.endsWith(".js"));
+        },
+        { timeout: 15000 }
+      );
+    } catch {
+      console.warn("[ChatGPT Web Browser] oaistatic script not found in 15s, continuing anyway");
+    }
+    await new Promise((r) => setTimeout(r, 2000));
   }
 
   async init() {
@@ -175,57 +211,159 @@ export class ChatGPTWebClientBrowser {
       timezone_offset_min: new Date().getTimezoneOffset(),
       conversation_id: conversationId === "new" ? undefined : conversationId,
       history_and_training_disabled: false,
+      conversation_mode: { kind: "primary_assistant", plugin_ids: null },
+      force_paragen: false,
+      force_paragen_model_slug: "",
+      force_rate_limit: false,
+      reset_rate_limits: false,
+      force_use_sse: true,
     };
 
+    const pageUrl = page.url();
+
     const responseData = await page.evaluate(
-      async ({ body }) => {
-        const res = await fetch("https://chatgpt.com/backend-api/conversation", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "text/event-stream",
-          },
-          body: JSON.stringify(body),
+      async ({ body, pageUrl }) => {
+        const baseHeaders = (accessToken: string | undefined, deviceId: string) => ({
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+          "oai-device-id": deviceId,
+          "oai-language": "en-US",
+          Referer: pageUrl || "https://chatgpt.com/",
+          "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": '"macOS"',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         });
+
+        async function warmupSentinel(accessToken: string | undefined, deviceId: string) {
+          const h = baseHeaders(accessToken, deviceId);
+          await fetch("https://chatgpt.com/backend-api/conversation/init", {
+            method: "POST",
+            headers: h,
+            body: "{}",
+            credentials: "include",
+          }).catch(() => {});
+          await fetch("https://chatgpt.com/backend-api/sentinel/chat-requirements/prepare", {
+            method: "POST",
+            headers: h,
+            body: "{}",
+            credentials: "include",
+          }).catch(() => {});
+          await fetch("https://chatgpt.com/backend-api/sentinel/chat-requirements/finalize", {
+            method: "POST",
+            headers: h,
+            body: "{}",
+            credentials: "include",
+          }).catch(() => {});
+        }
+
+        async function getSession() {
+          const r = await fetch("https://chatgpt.com/api/auth/session", { credentials: "include" });
+          return r.ok ? r.json() : null;
+        }
+
+        async function tryFetchWithSentinel(accessToken: string | undefined, deviceId: string) {
+          const scripts = Array.from(document.scripts);
+          const assetSrc = scripts.map((s) => s.src).find((s) => s?.includes("oaistatic.com") && s.endsWith(".js"));
+          const assetUrl = assetSrc || "https://cdn.oaistatic.com/assets/i5bamk05qmvsi6c3.js";
+
+          try {
+            const g = await import(/* @vite-ignore */ assetUrl);
+            if (typeof g.bk !== "function" || typeof g.fX !== "function") {
+              return { error: `Sentinel asset missing bk/fX (asset: ${assetUrl})` };
+            }
+            const z = await g.bk();
+            const turnstileKey = z?.turnstile?.bx ?? z?.turnstile?.dx;
+            if (!turnstileKey) return { error: "Sentinel chat-requirements missing turnstile" };
+            const r = await g.bi(turnstileKey);
+            let arkose: unknown = null;
+            try {
+              arkose = await g.bl?.getEnforcementToken?.(z);
+            } catch {
+              // Arkose may fail (captcha), continue with null
+            }
+            let p: unknown = null;
+            try {
+              p = await g.bm?.getEnforcementToken?.(z);
+            } catch {
+              // Proof token may fail, continue with null
+            }
+            const extraHeaders = await g.fX(z, arkose, r, p, null);
+
+            const headers: Record<string, string> = {
+              ...baseHeaders(accessToken, deviceId),
+              ...(typeof extraHeaders === "object" ? extraHeaders : {}),
+            };
+
+            const res = await fetch("https://chatgpt.com/backend-api/conversation", {
+              method: "POST",
+              headers,
+              body: JSON.stringify(body),
+              credentials: "include",
+            });
+            return { res };
+          } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : String(e);
+            return { error: `Sentinel token failed: ${msg}` };
+          }
+        }
+
+        const session = await getSession();
+        const accessToken = session?.accessToken;
+        const deviceId = (session as { oaiDeviceId?: string })?.oaiDeviceId ?? crypto.randomUUID();
+
+        const sentinelResult = await tryFetchWithSentinel(accessToken, deviceId);
+        const res =
+          sentinelResult.res ??
+          (await fetch("https://chatgpt.com/backend-api/conversation", {
+            method: "POST",
+            headers: baseHeaders(accessToken, deviceId),
+            body: JSON.stringify(body),
+            credentials: "include",
+          }));
+
+        const sentinelError = "error" in sentinelResult ? sentinelResult.error : undefined;
 
         if (!res.ok) {
           const errorText = await res.text();
-          return { ok: false, status: res.status, error: errorText };
+          return { ok: false, status: res.status, error: errorText, sentinelError };
         }
 
         const reader = res.body?.getReader();
-        if (!reader) {
-          return { ok: false, status: 500, error: "No response body" };
-        }
+        if (!reader) return { ok: false, status: 500, error: "No response body", sentinelError };
 
         const decoder = new TextDecoder();
         let fullText = "";
-
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           fullText += decoder.decode(value, { stream: true });
         }
-
         return { ok: true, data: fullText };
       },
-      { body },
+      { body, pageUrl },
     );
 
-    console.log(`[ChatGPT Web Browser] Message response: ${responseData.ok ? 200 : responseData.status}`);
-
     if (!responseData.ok) {
-      console.error(`[ChatGPT Web Browser] Message failed: ${responseData.status} - ${responseData.error}`);
-
-      if (responseData.status === 401) {
+      const sentinelHint =
+        responseData.sentinelError
+          ? ` Sentinel: ${responseData.sentinelError}`
+          : " 若持续 403，需在 chatgpt.com 控制台检查 oaistatic 脚本导出名是否变更。";
+      if (responseData.status === 403) {
         throw new Error(
-          "Authentication failed. Please re-run onboarding to refresh your ChatGPT session."
+          `ChatGPT 403 风控：${responseData.error?.slice(0, 200) || "Unusual activity"}${sentinelHint}` +
+            " 建议：关闭 VPN、降低频率、确保在同一 Chrome 登录页发起请求。"
         );
       }
-      throw new Error(`ChatGPT API error: ${responseData.status}`);
+      if (responseData.status === 401) {
+        throw new Error(
+          "ChatGPT 认证失败，请重新运行 ./onboard.sh 刷新 session。"
+        );
+      }
+      throw new Error(`ChatGPT API 错误 ${responseData.status}: ${responseData.error?.slice(0, 200) || ""}`);
     }
 
-    console.log(`[ChatGPT Web Browser] Response data length: ${responseData.data?.length || 0} bytes`);
+    console.log(`[ChatGPT Web Browser] Response length: ${responseData.data?.length || 0} bytes`);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({

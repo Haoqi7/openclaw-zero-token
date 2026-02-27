@@ -16,7 +16,8 @@ export type ModelApi =
   | "gemini-web"
   | "grok-web"
   | "z-web"
-  | "manus-web";
+  | "manus-web"
+  | "manus-api";
 
 export type ModelCompatConfig = {
   supportsStore?: boolean;

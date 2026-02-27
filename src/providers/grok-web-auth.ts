@@ -1,4 +1,12 @@
-import { chromium, type Browser, type BrowserContext } from "playwright-core";
+import { chromium } from "playwright-core";
+import { getHeadersWithAuth } from "../browser/cdp.helpers.js";
+import {
+  launchOpenClawChrome,
+  stopOpenClawChrome,
+  getChromeWebSocketUrl,
+} from "../browser/chrome.js";
+import { resolveBrowserConfig, resolveProfile } from "../browser/config.js";
+import { loadConfig } from "../config/io.js";
 
 export interface GrokWebAuthResult {
   cookie: string;
@@ -16,53 +24,79 @@ export async function loginGrokWeb(
 ): Promise<GrokWebAuthResult> {
   const { onProgress = console.log, headless = false } = options;
 
-  let browser: Browser | null = null;
-  let context: BrowserContext | null = null;
+  const rootConfig = loadConfig();
+  const browserConfig = resolveBrowserConfig(rootConfig.browser, rootConfig);
+  const profile = resolveProfile(browserConfig, browserConfig.defaultProfile);
+  if (!profile) {
+    throw new Error(`Could not resolve browser profile '${browserConfig.defaultProfile}'`);
+  }
+
+  let running: Awaited<ReturnType<typeof launchOpenClawChrome>> | { cdpPort: number };
+  let didLaunch = false;
+
+  if (browserConfig.attachOnly) {
+    onProgress("Connecting to existing Chrome (attach mode)...");
+    const wsUrl = await getChromeWebSocketUrl(profile.cdpUrl, 5000);
+    if (!wsUrl) {
+      throw new Error(
+        `Failed to connect to Chrome at ${profile.cdpUrl}. ` +
+          "Make sure Chrome is running in debug mode (./start-chrome-debug.sh)",
+      );
+    }
+    running = { cdpPort: profile.cdpPort };
+  } else {
+    onProgress("Launching browser...");
+    running = await launchOpenClawChrome(browserConfig, profile);
+    didLaunch = true;
+  }
 
   try {
-    onProgress("Launching browser...");
-    browser = await chromium.launch({ headless });
+    const cdpUrl = browserConfig.attachOnly
+      ? profile.cdpUrl
+      : `http://127.0.0.1:${running.cdpPort}`;
+    let wsUrl: string | null = null;
 
-    context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    onProgress("Waiting for browser debugger...");
+    for (let i = 0; i < 10; i++) {
+      wsUrl = await getChromeWebSocketUrl(cdpUrl, 2000);
+      if (wsUrl) break;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+
+    if (!wsUrl) {
+      throw new Error(`Failed to resolve Chrome WebSocket URL from ${cdpUrl} after retries.`);
+    }
+
+    onProgress("Connecting to browser...");
+    const browser = await chromium.connectOverCDP(wsUrl, {
+      headers: getHeadersWithAuth(wsUrl),
     });
-
-    const page = await context.newPage();
+    const context = browser.contexts()[0];
+    const page = context.pages()[0] || (await context.newPage());
 
     onProgress("Navigating to Grok...");
     await page.goto("https://grok.com", { waitUntil: "domcontentloaded" });
 
-    onProgress("Please login in the browser window...");
+    const userAgent = await page.evaluate(() => navigator.userAgent);
+    onProgress("Please login to Grok in the opened browser window...");
     onProgress("Waiting for authentication...");
 
-    // Wait for login completion by checking for auth cookies
     await page.waitForFunction(
       () => {
         return document.cookie.includes("auth_token") || document.cookie.includes("ct0");
       },
-      { timeout: 300000 }, // 5 minutes
+      { timeout: 300000 },
     );
 
     onProgress("Login detected, capturing cookies...");
-
-    const cookies = await context.cookies();
+    const cookies = await context.cookies("https://grok.com");
     const cookieString = cookies.map((c) => `${c.name}=${c.value}`).join("; ");
-
-    const userAgent = await page.evaluate(() => navigator.userAgent);
-
     onProgress("Authentication captured successfully!");
 
-    return {
-      cookie: cookieString,
-      userAgent,
-    };
+    return { cookie: cookieString, userAgent };
   } finally {
-    if (context) {
-      await context.close();
-    }
-    if (browser) {
-      await browser.close();
+    if (didLaunch && running && "proc" in running) {
+      await stopOpenClawChrome(running);
     }
   }
 }

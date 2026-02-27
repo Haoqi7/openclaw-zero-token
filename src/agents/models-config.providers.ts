@@ -210,7 +210,7 @@ const YUANBAO_WEB_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
-export const KIMI_WEB_BASE_URL = "https://kimi.moonshot.cn";
+export const KIMI_WEB_BASE_URL = "https://www.kimi.com";
 export const KIMI_WEB_DEFAULT_MODEL_ID = "moonshot-v1-32k";
 const KIMI_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
 const KIMI_WEB_DEFAULT_MAX_TOKENS = 4096;
@@ -531,7 +531,34 @@ export function normalizeProviders(params: {
       normalizedProvider = googleNormalized;
     }
 
-    next[key] = normalizedProvider;
+    // Consolidate "qwen web" (with space) into "qwen-web" to fix duplicate provider display
+    const outputKey = normalizedKey === "qwen web" ? "qwen-web" : normalizedKey;
+    if (outputKey !== normalizedKey) {
+      mutated = true;
+    }
+    const existing = next[outputKey];
+    if (existing && Array.isArray(existing.models) && Array.isArray(normalizedProvider.models)) {
+      const seen = new Set(
+        (existing.models as Array<{ id?: string }>).map((m) => m.id).filter(Boolean),
+      );
+      const extra = (normalizedProvider.models as Array<{ id?: string }>).filter(
+        (m) => m.id && !seen.has(m.id),
+      );
+      if (extra.length > 0) {
+        mutated = true;
+        next[outputKey] = {
+          ...existing,
+          ...normalizedProvider,
+          models: [...(existing.models ?? []), ...extra],
+        };
+      } else {
+        next[outputKey] = { ...existing, ...normalizedProvider };
+      }
+    } else if (existing) {
+      next[outputKey] = { ...existing, ...normalizedProvider };
+    } else {
+      next[outputKey] = normalizedProvider;
+    }
   }
 
   return mutated ? next : providers;
@@ -1157,6 +1184,39 @@ export async function buildManusWebProvider(params?: {
   };
 }
 
+const MANUS_API_DEFAULT_CONTEXT_WINDOW = 32000;
+const MANUS_API_DEFAULT_MAX_TOKENS = 4096;
+const MANUS_API_DEFAULT_COST = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+
+export const MANUS_API_DEFAULT_MODEL_REF = "manus-api/manus-1.6";
+
+export function buildManusApiProvider(): ProviderConfig {
+  return {
+    baseUrl: "https://api.manus.ai",
+    api: "manus-api",
+    models: [
+      {
+        id: "manus-1.6",
+        name: "Manus 1.6 (API)",
+        reasoning: false,
+        input: ["text"],
+        cost: MANUS_API_DEFAULT_COST,
+        contextWindow: MANUS_API_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: MANUS_API_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "manus-1.6-lite",
+        name: "Manus 1.6 Lite (API)",
+        reasoning: false,
+        input: ["text"],
+        cost: MANUS_API_DEFAULT_COST,
+        contextWindow: MANUS_API_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: MANUS_API_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
 export function buildNvidiaProvider(): ProviderConfig {
   return {
     baseUrl: NVIDIA_BASE_URL,
@@ -1484,6 +1544,15 @@ export async function resolveImplicitProviders(params: {
   providers["manus-web"] = {
     ...(await buildManusWebProvider({ apiKey: manusWebKey })),
     apiKey: manusWebKey,
+  };
+
+  const manusApiKey =
+    resolveEnvApiKeyVarName("manus-api") ??
+    resolveApiKeyFromProfiles({ provider: "manus-api", store: authStore });
+
+  providers["manus-api"] = {
+    ...buildManusApiProvider(),
+    apiKey: manusApiKey,
   };
 
   return providers;

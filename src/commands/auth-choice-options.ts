@@ -233,10 +233,10 @@ const AUTH_CHOICE_GROUP_DEFS: {
     choices: ["z-web"],
   },
   {
-    value: "manus-web",
-    label: "Manus Web",
-    hint: "Browser-based authentication",
-    choices: ["manus-web"],
+    value: "manus",
+    label: "Manus",
+    hint: "API key or browser",
+    choices: ["manus-api-key", "manus-web"],
   },
 ];
 
@@ -294,6 +294,11 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
     value: "venice-api-key",
     label: "Venice AI API key",
     hint: "Privacy-focused inference (uncensored models)",
+  },
+  {
+    value: "manus-api-key",
+    label: "Manus API key",
+    hint: "Official Manus API (Credit-based, free tier)",
   },
   {
     value: "together-api-key",
@@ -433,6 +438,11 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
     value: "z-web",
     label: "Z Browser",
     hint: "Access Z.AI via browser",
+  },
+  {
+    value: "manus-api-key",
+    label: "Manus API",
+    hint: "Official Manus API (Credit-based)",
   },
   {
     value: "manus-web",

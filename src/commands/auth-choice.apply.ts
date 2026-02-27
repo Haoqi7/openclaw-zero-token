@@ -11,6 +11,7 @@ import { applyAuthChoiceKimiWeb } from "./auth-choice.apply.kimi-web.js";
 import { applyAuthChoiceGeminiWeb } from "./auth-choice.apply.gemini-web.js";
 import { applyAuthChoiceGrokWeb } from "./auth-choice.apply.grok-web.js";
 import { applyAuthChoiceZWeb } from "./auth-choice.apply.z-web.js";
+import { applyAuthChoiceManusApi } from "./auth-choice.apply.manus-api.js";
 import { applyAuthChoiceManusWeb } from "./auth-choice.apply.manus-web.js";
 import { applyAuthChoiceCopilotProxy } from "./auth-choice.apply.copilot-proxy.js";
 import { applyAuthChoiceDeepseekWeb } from "./auth-choice.apply.deepseek-web.js";
@@ -53,6 +54,7 @@ export type ApplyAuthChoiceParams = {
     grokWebCookie?: string;
     zWebCookie?: string;
     manusWebCookie?: string;
+    manusApiKey?: string;
   };
 };
 
@@ -86,6 +88,7 @@ export async function applyAuthChoice(
     applyAuthChoiceGeminiWeb,
     applyAuthChoiceGrokWeb,
     applyAuthChoiceZWeb,
+    applyAuthChoiceManusApi,
     applyAuthChoiceManusWeb,
     applyAuthChoiceXAI,
   ];

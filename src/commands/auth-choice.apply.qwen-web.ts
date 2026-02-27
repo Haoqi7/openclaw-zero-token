@@ -1,5 +1,6 @@
 import { loginQwenWeb } from "../providers/qwen-web-auth.js";
 import type { ApplyAuthChoiceParams, ApplyAuthChoiceResult } from "./auth-choice.apply.js";
+import { applyQwenWebConfig } from "./onboard-auth.config-core.js";
 import { setQwenWebCookie } from "./onboard-auth.credentials.js";
 import { openUrl } from "./onboard-helpers.js";
 
@@ -89,5 +90,6 @@ export async function applyAuthChoiceQwenWeb(
     await setQwenWebCookie({ cookie }, agentDir);
   }
 
-  return { config };
+  const nextConfig = await applyQwenWebConfig(config);
+  return { config: nextConfig };
 }

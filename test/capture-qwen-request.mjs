@@ -2,13 +2,15 @@
 
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 function getRandomMessage() {
   try {
-    const messages = readFileSync('test-messages.txt', 'utf-8')
+    const filePath = resolve(process.cwd(), 'test-messages.txt');
+    const messages = readFileSync(filePath, 'utf-8')
       .split('\n')
-      .filter(line => line.trim().length > 0);
-    return messages[Math.floor(Math.random() * messages.length)];
+      .filter((line) => line.trim().length > 0);
+    return messages[Math.floor(Math.random() * messages.length)]?.trim() ?? '今天天气怎么样？';
   } catch {
     return '今天天气怎么样？';
   }

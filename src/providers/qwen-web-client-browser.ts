@@ -174,9 +174,9 @@ export class QwenWebClientBrowser {
           }
 
           const data = await res.json();
-          console.log(`[Browser] Chat created, full response:`, JSON.stringify(data));
-          console.log(`[Browser] Chat ID from response:`, data.chat_id, data.id, data.chatId);
-          return { ok: true, chatId: data.chat_id || data.id || data.chatId, fullData: data };
+          const chatId = data.data?.id ?? data.chat_id ?? data.id ?? data.chatId;
+          console.log(`[Browser] Chat created, chat ID:`, chatId);
+          return { ok: true, chatId, fullData: data };
         } catch (err) {
           console.error(`[Browser] Create chat exception:`, err);
           return { ok: false, status: 500, error: String(err) };
@@ -204,6 +204,7 @@ export class QwenWebClientBrowser {
           const url = `${baseUrl}/api/v2/chat/completions?chat_id=${chatId}`;
           console.log(`[Browser] Sending message: ${url}`);
           
+          const fid = crypto.randomUUID();
           const requestBody = {
             stream: true,
             version: "2.1",
@@ -211,10 +212,20 @@ export class QwenWebClientBrowser {
             chat_id: chatId,
             chat_mode: "normal",
             model: model,
+            parent_id: null,
             messages: [
               {
+                fid,
+                parentId: null,
+                childrenIds: [],
                 role: "user",
                 content: message,
+                user_action: "chat",
+                files: [],
+                timestamp: Math.floor(Date.now() / 1000),
+                models: [model],
+                chat_type: "t2t",
+                feature_config: { thinking_enabled: true, output_schema: "phase" },
               },
             ],
           };

@@ -1,51 +1,122 @@
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright-core";
+import { chromium } from "playwright-core";
+import type { BrowserContext, Page } from "playwright-core";
+import type { ModelDefinitionConfig } from "../config/types.models.js";
+import { getHeadersWithAuth } from "../browser/cdp.helpers.js";
+import {
+  launchOpenClawChrome,
+  stopOpenClawChrome,
+  getChromeWebSocketUrl,
+  type RunningChrome,
+} from "../browser/chrome.js";
+import { resolveBrowserConfig, resolveProfile } from "../browser/config.js";
+import { loadConfig } from "../config/io.js";
 
 export interface YuanbaoWebClientOptions {
   cookie: string;
-  userAgent: string;
-  headless?: boolean;
+  userAgent?: string;
 }
 
+/**
+ * Yuanbao Web Client using CDP attach (same pattern as Qwen/ChatGPT)
+ * 使用 DOM 模拟发送消息，因 fetch 会返回 404
+ */
 export class YuanbaoWebClientBrowser {
-  private options: YuanbaoWebClientOptions;
-  private browser: Browser | null = null;
-  private context: BrowserContext | null = null;
+  private cookie: string;
+  private userAgent: string;
+  private baseUrl = "https://yuanbao.tencent.com";
+  private chatUrl = "https://yuanbao.tencent.com/chat/na";
+  private browser: BrowserContext | null = null;
   private page: Page | null = null;
-  private initialized = false;
+  private running: RunningChrome | null = null;
 
-  constructor(options: YuanbaoWebClientOptions) {
-    this.options = options;
+  constructor(options: YuanbaoWebClientOptions | string) {
+    if (typeof options === "string") {
+      try {
+        const parsed = JSON.parse(options) as YuanbaoWebClientOptions;
+        this.cookie = parsed.cookie;
+        this.userAgent = parsed.userAgent || "Mozilla/5.0";
+      } catch {
+        this.cookie = options;
+        this.userAgent = "Mozilla/5.0";
+      }
+    } else {
+      this.cookie = options.cookie;
+      this.userAgent = options.userAgent || "Mozilla/5.0";
+    }
   }
 
-  async init(): Promise<void> {
-    if (this.initialized) {
-      return;
+  private async ensureBrowser() {
+    if (this.browser && this.page) {
+      return { browser: this.browser, page: this.page };
     }
 
-    this.browser = await chromium.launch({
-      headless: this.options.headless ?? true,
-    });
+    const rootConfig = loadConfig();
+    const browserConfig = resolveBrowserConfig(rootConfig.browser, rootConfig);
+    const profile = resolveProfile(browserConfig, browserConfig.defaultProfile);
+    if (!profile) {
+      throw new Error(`Could not resolve browser profile '${browserConfig.defaultProfile}'`);
+    }
 
-    this.context = await this.browser.newContext({
-      userAgent: this.options.userAgent,
-    });
+    if (browserConfig.attachOnly) {
+      let wsUrl: string | null = null;
+      for (let i = 0; i < 10; i++) {
+        wsUrl = await getChromeWebSocketUrl(profile.cdpUrl, 2000);
+        if (wsUrl) break;
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      if (!wsUrl) {
+        throw new Error(
+          `Failed to connect to Chrome at ${profile.cdpUrl}. Make sure Chrome is running in debug mode (./start-chrome-debug.sh)`
+        );
+      }
 
-    await this.context.addCookies(
-      this.options.cookie.split(";").map((cookie) => {
-        const [name, ...valueParts] = cookie.trim().split("=");
+      this.browser = await chromium
+        .connectOverCDP(wsUrl, { headers: getHeadersWithAuth(wsUrl) })
+        .then((b) => b.contexts()[0]);
+
+      const pages = this.browser.pages();
+      let yuanbaoPage = pages.find((p) => p.url().includes("yuanbao.tencent.com"));
+      if (yuanbaoPage) {
+        this.page = yuanbaoPage;
+      } else {
+        this.page = await this.browser.newPage();
+        await this.page.goto(this.chatUrl, { waitUntil: "domcontentloaded" });
+      }
+    } else {
+      this.running = await launchOpenClawChrome(browserConfig, profile);
+      const cdpUrl = `http://127.0.0.1:${this.running.cdpPort}`;
+      let wsUrl: string | null = null;
+      for (let i = 0; i < 10; i++) {
+        wsUrl = await getChromeWebSocketUrl(cdpUrl, 2000);
+        if (wsUrl) break;
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      if (!wsUrl) throw new Error(`Failed to resolve Chrome WebSocket URL from ${cdpUrl}`);
+
+      this.browser = await chromium
+        .connectOverCDP(wsUrl, { headers: getHeadersWithAuth(wsUrl) })
+        .then((b) => b.contexts()[0]);
+      this.page = this.browser.pages()[0] || (await this.browser.newPage());
+    }
+
+    if (this.cookie.trim()) {
+      const cookies = this.cookie.split(";").map((c) => {
+        const [name, ...valueParts] = c.trim().split("=");
         return {
           name: name.trim(),
           value: valueParts.join("=").trim(),
           domain: ".tencent.com",
           path: "/",
         };
-      }),
-    );
+      });
+      await this.browser.addCookies(cookies);
+    }
 
-    this.page = await this.context.newPage();
-    await this.page.goto("https://yuanbao.tencent.com/chat/na", { waitUntil: "domcontentloaded" });
+    return { browser: this.browser, page: this.page };
+  }
 
-    this.initialized = true;
+  async init() {
+    await this.ensureBrowser();
   }
 
   async chatCompletions(params: {
@@ -54,73 +125,78 @@ export class YuanbaoWebClientBrowser {
     model: string;
     signal?: AbortSignal;
   }): Promise<ReadableStream<Uint8Array>> {
-    if (!this.page) {
-      throw new Error("YuanbaoWebClientBrowser not initialized");
-    }
+    const { page } = await this.ensureBrowser();
 
-    const { conversationId, message, model } = params;
-
-    const streamResponse = await this.page.evaluate(
-      async ({ conversationId, message, model }) => {
-        const response = await fetch("https://yuanbao.tencent.com/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            conversation_id: conversationId || undefined,
-            message,
-            model,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Yuanbao API error: ${response.status} ${response.statusText}`);
+    const sent = await page.evaluate(
+      async (msg) => {
+        const sel = 'textarea, [contenteditable="true"], [data-placeholder], input[type="text"]';
+        const ed = document.querySelector(sel);
+        if (!ed) return false;
+        ed.focus();
+        if (ed.tagName === "TEXTAREA" || ed.tagName === "INPUT") {
+          (ed as HTMLTextAreaElement).value = msg;
+          ed.dispatchEvent(new Event("input", { bubbles: true }));
+        } else {
+          (ed as HTMLElement).textContent = msg;
+          ed.dispatchEvent(new Event("input", { bubbles: true }));
         }
-
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("No response body");
+        const btn =
+          document.querySelector('button[type="submit"]') ||
+          document.querySelector('button[aria-label*="发送"]') ||
+          document.querySelector('button[aria-label*="Send"]') ||
+          document.querySelector('[class*="send"]') ||
+          document.querySelector("form button");
+        if (btn) {
+          (btn as HTMLElement).click();
+          return true;
         }
-
-        const chunks: number[][] = [];
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(Array.from(value));
-        }
-
-        return chunks;
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 13, bubbles: true }));
+        return true;
       },
-      { conversationId, message, model },
+      params.message
     );
 
-    let index = 0;
+    if (!sent) {
+      throw new Error("Yuanbao: 无法找到输入框或发送按钮，请确保在 yuanbao.tencent.com/chat/... 聊天页");
+    }
+
+    await new Promise((r) => setTimeout(r, 12000));
+
+    const extractedText = await page.evaluate(() => {
+      const els = document.querySelectorAll(
+        '[class*="message"], [class*="assistant"], [class*="markdown"], [data-role="assistant"]'
+      );
+      return els.length > 0 ? (els[els.length - 1]?.textContent ?? "").trim() : "";
+    });
+
+    if (!extractedText) {
+      throw new Error("Yuanbao: 未检测到回复，请确保已登录 yuanbao.tencent.com");
+    }
+
+    const escaped = JSON.stringify(extractedText);
+    const fakeSse = `data: {"text":${escaped}}\n\ndata: [DONE]\n\n`;
+    const encoder = new TextEncoder();
     return new ReadableStream({
-      pull(controller) {
-        if (index < streamResponse.length) {
-          controller.enqueue(new Uint8Array(streamResponse[index]));
-          index++;
-        } else {
-          controller.close();
-        }
+      start(controller) {
+        controller.enqueue(encoder.encode(fakeSse));
+        controller.close();
       },
     });
   }
 
-  async close(): Promise<void> {
-    if (this.page) {
-      await this.page.close();
-      this.page = null;
+  async close() {
+    if (this.running) {
+      await stopOpenClawChrome(this.running);
+      this.running = null;
     }
-    if (this.context) {
-      await this.context.close();
-      this.context = null;
-    }
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-    }
-    this.initialized = false;
+    this.browser = null;
+    this.page = null;
+  }
+
+  async discoverModels(): Promise<ModelDefinitionConfig[]> {
+    return [
+      { id: "hunyuan-pro", name: "Hunyuan Pro", provider: "yuanbao-web", api: "yuanbao-web", contextWindow: 32000, maxOutputTokens: 4096 },
+      { id: "hunyuan-standard", name: "Hunyuan Standard", provider: "yuanbao-web", api: "yuanbao-web", contextWindow: 32000, maxOutputTokens: 4096 },
+    ];
   }
 }

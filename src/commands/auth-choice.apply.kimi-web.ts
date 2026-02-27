@@ -39,8 +39,8 @@ export async function applyAuthChoiceKimiWeb(
     }
 
     if (!cookie) {
-      await prompter.note(["To use Kimi Browser, you need cookies from kimi.moonshot.cn.", "1. Login to https://kimi.moonshot.cn/ in your browser", "2. Open DevTools (F12) -> Application -> Cookies", "3. Copy all cookies"].join("\n"), "Kimi Login");
-      cookie = await prompter.text({ message: "Paste cookies", hint: "All cookies from kimi.moonshot.cn", placeholder: "...", validate: (value) => (value.trim().length > 0 ? undefined : "Required") });
+      await prompter.note(["To use Kimi Browser, you need cookies from www.kimi.com.", "1. Login to https://www.kimi.com/ in your browser", "2. Open DevTools (F12) -> Application -> Cookies", "3. Copy all cookies"].join("\n"), "Kimi Login");
+      cookie = await prompter.text({ message: "Paste cookies", hint: "All cookies from www.kimi.com", placeholder: "...", validate: (value) => (value.trim().length > 0 ? undefined : "Required") });
       const authData = JSON.stringify({ cookie, userAgent: "Mozilla/5.0" });
       await setKimiWebCookie({ cookie: authData }, agentDir);
     }

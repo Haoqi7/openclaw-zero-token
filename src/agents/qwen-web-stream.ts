@@ -109,8 +109,12 @@ export function createQwenWebStreamFn(cookieOrJson: string): StreamFn {
               conversationMap.set(sessionKey, data.sessionId || data.conversationId);
             }
 
-            // Extract content delta
-            const delta = data.text || data.content || data.delta;
+            // Extract content delta - Qwen v2 uses choices[0].delta.content
+            const delta =
+              data.choices?.[0]?.delta?.content ??
+              data.text ??
+              data.content ??
+              data.delta;
             if (typeof delta === "string" && delta) {
               if (contentParts.length === 0) {
                 contentParts[contentIndex] = { type: "text", text: "" };

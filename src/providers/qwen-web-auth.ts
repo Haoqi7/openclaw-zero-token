@@ -25,11 +25,27 @@ export async function loginQwenWeb(params: {
     throw new Error(`Could not resolve browser profile '${browserConfig.defaultProfile}'`);
   }
 
-  params.onProgress("Launching browser...");
-  const running = await launchOpenClawChrome(browserConfig, profile);
+  let running: Awaited<ReturnType<typeof launchOpenClawChrome>> | { cdpPort: number };
+  let didLaunch = false;
+
+  if (browserConfig.attachOnly) {
+    params.onProgress("Connecting to existing Chrome (attach mode)...");
+    const wsUrl = await getChromeWebSocketUrl(profile.cdpUrl, 5000);
+    if (!wsUrl) {
+      throw new Error(
+        `Failed to connect to Chrome at ${profile.cdpUrl}. ` +
+          "Make sure Chrome is running in debug mode (./start-chrome-debug.sh)"
+      );
+    }
+    running = { cdpPort: profile.cdpPort };
+  } else {
+    params.onProgress("Launching browser...");
+    running = await launchOpenClawChrome(browserConfig, profile);
+    didLaunch = true;
+  }
 
   try {
-    const cdpUrl = `http://127.0.0.1:${running.cdpPort}`;
+    const cdpUrl = browserConfig.attachOnly ? profile.cdpUrl : `http://127.0.0.1:${running.cdpPort}`;
     let wsUrl: string | null = null;
 
     params.onProgress("Waiting for browser debugger...");
@@ -161,6 +177,8 @@ export async function loginQwenWeb(params: {
       }, 2000);
     });
   } finally {
-    await stopOpenClawChrome(running);
+    if (didLaunch && running && "proc" in running) {
+      await stopOpenClawChrome(running);
+    }
   }
 }
