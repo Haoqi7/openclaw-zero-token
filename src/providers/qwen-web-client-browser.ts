@@ -143,110 +143,142 @@ export class QwenWebClientBrowser {
   }): Promise<ReadableStream<Uint8Array>> {
     const { page } = await this.ensureBrowser();
 
-    const conversationId = params.conversationId || crypto.randomUUID();
+    const model = params.model || "qwen3.5-plus";
 
     console.log(`[Qwen Web Browser] Sending message`);
-    console.log(`[Qwen Web Browser] Conversation ID: ${conversationId}`);
-    console.log(`[Qwen Web Browser] Model: ${params.model || "qwen-max"}`);
+    console.log(`[Qwen Web Browser] Model: ${model}`);
     console.log(`[Qwen Web Browser] Message: ${params.message.substring(0, 100)}...`);
 
-    // Try different API endpoints and formats
-    const apiEndpoints = [
-      "/api/chat/completions",
-      "/api/v1/chat/completions",
-      "/api/chat",
-    ];
+    // Step 1: Create a new chat session to get chat_id
+    const createChatResult = await page.evaluate(
+      async ({ baseUrl }) => {
+        try {
+          const url = `${baseUrl}/api/v2/chats/new`;
+          console.log(`[Browser] Creating chat: ${url}`);
+          
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
 
-    let responseData: any = null;
-    let successEndpoint = "";
+          console.log(`[Browser] Create chat response status: ${res.status}`);
+          console.log(`[Browser] Create chat response headers:`, Object.fromEntries(res.headers.entries()));
 
-    for (const endpoint of apiEndpoints) {
-      console.log(`[Qwen Web Browser] Trying endpoint: ${endpoint}`);
-      
-      const body = {
-        model: params.model || "qwen-max",
-        messages: [
-          {
-            role: "user",
-            content: params.message,
-          },
-        ],
-        stream: true,
-      };
-
-      responseData = await page.evaluate(
-        async ({ baseUrl, endpoint, body }) => {
-          try {
-            const url = `${baseUrl}${endpoint}`;
-            console.log(`[Browser] Fetching: ${url}`);
-            
-            const res = await fetch(url, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Accept": "text/event-stream",
-              },
-              body: JSON.stringify(body),
-            });
-
-            console.log(`[Browser] Response status: ${res.status}`);
-            console.log(`[Browser] Response headers:`, Object.fromEntries(res.headers.entries()));
-
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.log(`[Browser] Error response: ${errorText.substring(0, 500)}`);
-              return { ok: false, status: res.status, error: errorText, endpoint };
-            }
-
-            const reader = res.body?.getReader();
-            if (!reader) {
-              return { ok: false, status: 500, error: "No response body", endpoint };
-            }
-
-            const decoder = new TextDecoder();
-            let fullText = "";
-            let chunkCount = 0;
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              const chunk = decoder.decode(value, { stream: true });
-              fullText += chunk;
-              chunkCount++;
-              if (chunkCount <= 3) {
-                console.log(`[Browser] Chunk ${chunkCount}: ${chunk.substring(0, 200)}`);
-              }
-            }
-
-            console.log(`[Browser] Total chunks: ${chunkCount}, Total length: ${fullText.length}`);
-            return { ok: true, data: fullText, endpoint };
-          } catch (err) {
-            console.error(`[Browser] Fetch error:`, err);
-            return { ok: false, status: 500, error: String(err), endpoint };
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.log(`[Browser] Create chat error response: ${errorText.substring(0, 500)}`);
+            return { ok: false, status: res.status, error: errorText };
           }
-        },
-        { baseUrl: this.baseUrl, endpoint, body },
-      );
 
-      if (responseData.ok) {
-        successEndpoint = endpoint;
-        console.log(`[Qwen Web Browser] Success with endpoint: ${endpoint}`);
-        break;
-      } else {
-        console.log(`[Qwen Web Browser] Failed with endpoint ${endpoint}: ${responseData.status} - ${responseData.error?.substring(0, 200)}`);
-      }
+          const data = await res.json();
+          console.log(`[Browser] Chat created, full response:`, JSON.stringify(data));
+          console.log(`[Browser] Chat ID from response:`, data.chat_id, data.id, data.chatId);
+          return { ok: true, chatId: data.chat_id || data.id || data.chatId, fullData: data };
+        } catch (err) {
+          console.error(`[Browser] Create chat exception:`, err);
+          return { ok: false, status: 500, error: String(err) };
+        }
+      },
+      { baseUrl: this.baseUrl },
+    );
+
+    console.log(`[Qwen Web Browser] Create chat result:`, JSON.stringify(createChatResult));
+
+    if (!createChatResult.ok || !createChatResult.chatId) {
+      console.error(`[Qwen Web Browser] Failed to create chat`);
+      console.error(`[Qwen Web Browser] Error: ${createChatResult.error}`);
+      console.error(`[Qwen Web Browser] Full result:`, JSON.stringify(createChatResult));
+      throw new Error(`Failed to create Qwen chat: ${createChatResult.error || 'No chat_id in response'}`);
     }
 
+    const chatId = createChatResult.chatId;
+    console.log(`[Qwen Web Browser] Chat ID: ${chatId}`);
+
+    // Step 2: Send message using the chat_id
+    const responseData = await page.evaluate(
+      async ({ baseUrl, chatId, model, message }) => {
+        try {
+          const url = `${baseUrl}/api/v2/chat/completions?chat_id=${chatId}`;
+          console.log(`[Browser] Sending message: ${url}`);
+          
+          const requestBody = {
+            stream: true,
+            version: "2.1",
+            incremental_output: true,
+            chat_id: chatId,
+            chat_mode: "normal",
+            model: model,
+            messages: [
+              {
+                role: "user",
+                content: message,
+              },
+            ],
+          };
+
+          console.log(`[Browser] Request body:`, JSON.stringify(requestBody, null, 2));
+          
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+            },
+            body: JSON.stringify(requestBody),
+          });
+
+          console.log(`[Browser] Response status: ${res.status}`);
+          console.log(`[Browser] Response headers:`, Object.fromEntries(res.headers.entries()));
+
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.log(`[Browser] Error response: ${errorText.substring(0, 500)}`);
+            return { ok: false, status: res.status, error: errorText };
+          }
+
+          const reader = res.body?.getReader();
+          if (!reader) {
+            return { ok: false, status: 500, error: "No response body" };
+          }
+
+          const decoder = new TextDecoder();
+          let fullText = "";
+          let chunkCount = 0;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            fullText += chunk;
+            chunkCount++;
+            if (chunkCount <= 3) {
+              console.log(`[Browser] Chunk ${chunkCount}: ${chunk.substring(0, 200)}`);
+            }
+          }
+
+          console.log(`[Browser] Total chunks: ${chunkCount}, Total length: ${fullText.length}`);
+          return { ok: true, data: fullText };
+        } catch (err) {
+          console.error(`[Browser] Fetch error:`, err);
+          return { ok: false, status: 500, error: String(err) };
+        }
+      },
+      { baseUrl: this.baseUrl, chatId, model: model, message: params.message },
+    );
+
     if (!responseData || !responseData.ok) {
-      console.error(`[Qwen Web Browser] All endpoints failed`);
-      console.error(`[Qwen Web Browser] Last error: ${responseData?.status} - ${responseData?.error}`);
+      console.error(`[Qwen Web Browser] Request failed`);
+      console.error(`[Qwen Web Browser] Error: ${responseData?.status} - ${responseData?.error}`);
 
       if (responseData?.status === 401 || responseData?.status === 403) {
         throw new Error(
           "Authentication failed. Please re-run onboarding to refresh your Qwen session."
         );
       }
-      throw new Error(`Qwen API error: ${responseData?.status || 'unknown'} - ${responseData?.error || 'All endpoints failed'}`);
+      throw new Error(`Qwen API error: ${responseData?.status || 'unknown'} - ${responseData?.error || 'Request failed'}`);
     }
 
     console.log(`[Qwen Web Browser] Response data length: ${responseData.data?.length || 0} bytes`);
@@ -275,24 +307,16 @@ export class QwenWebClientBrowser {
   async discoverModels(): Promise<ModelDefinitionConfig[]> {
     return [
       {
-        id: "qwen-max",
-        name: "Qwen Max",
-        provider: "qwen-web",
-        api: "qwen-web",
-        contextWindow: 8192,
-        maxOutputTokens: 4096,
-      },
-      {
-        id: "qwen-plus",
-        name: "Qwen Plus",
+        id: "qwen3.5-plus",
+        name: "Qwen 3.5 Plus",
         provider: "qwen-web",
         api: "qwen-web",
         contextWindow: 32768,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
       },
       {
-        id: "qwen-turbo",
-        name: "Qwen Turbo",
+        id: "qwen3.5-turbo",
+        name: "Qwen 3.5 Turbo",
         provider: "qwen-web",
         api: "qwen-web",
         contextWindow: 8192,

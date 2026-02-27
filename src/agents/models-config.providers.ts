@@ -962,8 +962,8 @@ export async function buildQwenWebProvider(params?: {
     api: "qwen-web",
     models: [
       {
-        id: "qwen-max",
-        name: "Qwen Max (Web)",
+        id: "qwen3.5-plus",
+        name: "Qwen 3.5 Plus",
         reasoning: false,
         input: ["text"],
         cost: QWEN_WEB_DEFAULT_COST,
@@ -971,17 +971,8 @@ export async function buildQwenWebProvider(params?: {
         maxTokens: QWEN_WEB_DEFAULT_MAX_TOKENS,
       },
       {
-        id: "qwen-plus",
-        name: "Qwen Plus (Web)",
-        reasoning: false,
-        input: ["text"],
-        cost: QWEN_WEB_DEFAULT_COST,
-        contextWindow: QWEN_WEB_DEFAULT_CONTEXT_WINDOW,
-        maxTokens: QWEN_WEB_DEFAULT_MAX_TOKENS,
-      },
-      {
-        id: "qwen-turbo",
-        name: "Qwen Turbo (Web)",
+        id: "qwen3.5-turbo",
+        name: "Qwen 3.5 Turbo",
         reasoning: false,
         input: ["text"],
         cost: QWEN_WEB_DEFAULT_COST,
