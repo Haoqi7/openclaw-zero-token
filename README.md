@@ -1,110 +1,228 @@
-# OpenClaw Web 平台扩展 / OpenClaw Web Platform Extension
+# OpenClaw Zero Token
 
-[中文](#中文) | [English](#english)
+**Use AI Models Without API Tokens** - Access DeepSeek, Doubao, Claude, ChatGPT and more for free via browser login authentication.
 
----
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 中文
-
-支持 **12 个平台**、**28+ 个模型** 的 AI 对话服务，完全免费使用。
-
-### 支持的平台与模型
-
-| 平台 | 网址 | 模型 | 测试状态 |
-|------|------|------|----------|
-| **DeepSeek Web** | chat.deepseek.com | DeepSeek V3、DeepSeek R1、V3+Search、R1+Search | ✅ 已测试 |
-| **Qwen Web**（千问） | chat.qwen.ai | Qwen 3.5 Plus、Qwen 3.5 Turbo | ✅ 已测试 |
-| **Kimi Web** | kimi.moonshot.cn | Moonshot v1 8K、32K、128K | ✅ 已测试 |
-| **Claude Web** | claude.ai | Claude 3.5 Sonnet、3 Opus、3 Haiku | 未测试 |
-| **ChatGPT Web** | chatgpt.com | GPT-4、GPT-4 Turbo、GPT-3.5 Turbo | 未测试 |
-| **Doubao Web** | doubao.com | Doubao-Seed 2.0、Doubao Pro | 未测试 |
-| **Yuanbao Web** | yuanbao.tencent.com | Hunyuan Pro、Hunyuan Standard | 未测试 |
-| **Gemini Web** (gemini-web) | [https://gemini.google.com/app](https://gemini.google.com/app) | Gemini Pro、Gemini Ultra | 未测试 |
-| **Grok Web** | grok.com | Grok 1、Grok 2 | 未测试 |
-| **Z Web** | chat.z.ai | GLM-4、GLM-3 Turbo | 未测试 |
-| **Manus Web** | manus.im | Manus 1 | 未测试 |
-| **Manus API** | api.manus.ai | Manus 1.6、Manus 1.6 Lite（官方 API，支持免费额度） | 未测试 |
-
-### 快速开始
-
-```bash
-npm install && npm run build
-
-openclaw gateway stop
-./start-chrome-debug.sh   # 单实例，自动打开各平台登录页
-./onboard.sh
-./server.sh start
-```
-
-详见 **START_HERE.md**、**TEST_STEPS.md**。
-
-### 文档
-
-- **INSTALLATION.md** - 安装与编译
-- **START_HERE.md** - 快速开始
-- **TEST_STEPS.md** - 完整测试步骤
-
-### 特性
-
-- ✅ 完全免费（Web 版 + Manus API 免费额度）
-- ✅ 统一浏览器方案（attachOnly 复用调试 Chrome）
-- ✅ 自动绕过反爬虫
-- ✅ 流式响应
-- ✅ 最小化配置
-
-### 系统要求
-
-Node.js v18+ | npm 8.x+ | Chrome 最新版 | macOS / Linux / Windows (WSL2)
+[English](README.md) | [简体中文](README_zh-CN.md)
 
 ---
 
-## English
+## Overview
 
-Support for **12 platforms** and **28+ models** with AI conversation services, completely free to use.
+OpenClaw Zero Token is a fork of [OpenClaw](https://github.com/openclaw/openclaw) with a core mission: **eliminate API token costs** by capturing session credentials through browser automation, enabling free access to major AI platforms.
 
-### Supported Platforms & Models
+### Why Zero Token?
 
-| Platform | URL | Models | Tested |
-|----------|-----|--------|--------|
-| **DeepSeek Web** | chat.deepseek.com | DeepSeek V3, R1, V3+Search, R1+Search | ✅ Yes |
-| **Qwen Web** | chat.qwen.ai | Qwen 3.5 Plus, Qwen 3.5 Turbo | ✅ Yes |
-| **Kimi Web** | kimi.moonshot.cn | Moonshot v1 8K, 32K, 128K | ✅ Yes |
-| **Claude Web** | claude.ai | Claude 3.5 Sonnet, 3 Opus, 3 Haiku | Untested |
-| **ChatGPT Web** | chatgpt.com | GPT-4, GPT-4 Turbo, GPT-3.5 Turbo | Untested |
-| **Doubao Web** | doubao.com | Doubao-Seed 2.0, Doubao Pro | Untested |
-| **Yuanbao Web** | yuanbao.tencent.com | Hunyuan Pro, Hunyuan Standard | Untested |
-| **Gemini Web** (gemini-web) | [https://gemini.google.com/app](https://gemini.google.com/app) | Gemini Pro, Gemini Ultra | Untested |
-| **Grok Web** | grok.com | Grok 1, Grok 2 | Untested |
-| **Z Web** | chat.z.ai | GLM-4, GLM-3 Turbo | Untested |
-| **Manus Web** | manus.im | Manus 1 | Untested |
-| **Manus API** | api.manus.ai | Manus 1.6, Manus 1.6 Lite (official API, free tier) | Untested |
+| Traditional Approach | Zero Token Approach |
+|---------------------|---------------------|
+| Requires purchasing API tokens | **Completely free** |
+| Pay per API call | No usage limits |
+| Credit card binding required | Only web login needed |
+| Potential token leakage | Credentials stored locally |
 
-### Quick Start
+### Supported Platforms
+
+| Platform | Status | Models |
+|----------|--------|--------|
+| DeepSeek | ✅ **Tested** | deepseek-chat, deepseek-reasoner |
+| Qwen (千问) | ✅ **Tested** | Qwen 3.5 Plus, Qwen 3.5 Turbo |
+| Kimi | ✅ **Tested** | Moonshot v1 8K, 32K, 128K |
+| Claude Web | ✅ **Tested** | claude-3-5-sonnet-20241022, claude-3-opus-20240229, claude-3-haiku-20240307 |
+| Doubao (豆包) | ✅ **Tested** | doubao-seed-2.0, doubao-pro |
+| ChatGPT Web | ⏳ Untested | GPT-4, GPT-4 Turbo |
+| Yuanbao (元宝) | ⏳ Untested | Hunyuan Pro, Hunyuan Standard |
+| Gemini Web | ⏳ Untested | Gemini Pro, Gemini Ultra |
+| Grok Web | ⏳ Untested | Grok 1, Grok 2 |
+| Z Web | ⏳ Untested | GLM-4, GLM-3 Turbo |
+| Manus Web | ⏳ Untested | Manus 1 |
+| Manus API | ⏳ Untested | Manus 1.6, Manus 1.6 Lite (API key, free tier) |
+
+> **Note:** All web-based providers use browser automation (Playwright) for authentication and API access. Platforms marked **Tested** have been verified to work.
+
+---
+
+### CLI Mode
 
 ```bash
-npm install && npm run build
-
-openclaw gateway stop
-./start-chrome-debug.sh
-./onboard.sh
-./server.sh start
+# Interactive terminal with Claude
+node openclaw.mjs tui
 ```
 
-See **START_HERE.md**, **TEST_STEPS.md** for details.
+---
 
-### Docs
+## Configuration
 
-- **INSTALLATION.md** - Install & build
-- **START_HERE.md** - Quick start
-- **TEST_STEPS.md** - Testing steps
+### openclaw.json
 
-### Features
+```json
+{
+  "auth": {
+    "profiles": {
+      "deepseek-web:default": {
+        "provider": "deepseek-web",
+        "mode": "api_key"
+      }
+    }
+  },
+  "models": {
+    "providers": {
+      "deepseek-web": {
+        "baseUrl": "https://chat.deepseek.com",
+        "api": "deepseek-web",
+        "models": [
+          {
+            "id": "deepseek-chat",
+            "name": "DeepSeek Chat",
+            "contextWindow": 64000,
+            "maxTokens": 4096
+          },
+          {
+            "id": "deepseek-reasoner",
+            "name": "DeepSeek Reasoner",
+            "reasoning": true,
+            "contextWindow": 64000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "gateway": {
+    "port": 3001,
+    "auth": {
+      "mode": "token",
+      "token": "your-gateway-token"
+    }
+  }
+}
+```
 
-- ✅ Free (Web versions + Manus API free tier)
-- ✅ Unified browser approach (attachOnly reuses debug Chrome)
-- ✅ Auto anti-bot bypass
-- ✅ Streaming responses
-- ✅ Minimal configuration
+---
+
+## Roadmap
+
+### Current Focus
+- ✅ DeepSeek Web, Qwen, Kimi, Claude Web, Doubao — all **tested and working**
+- 🔧 Improving credential capture reliability
+- 📝 Documentation improvements
+
+### Planned Features
+- 🔜 ChatGPT Web authentication support
+- 🔜 Auto-refresh for expired sessions
+
+---
+
+## Adding New Platforms
+
+To add support for a new platform, create the following files:
+
+### 1. Authentication Module (`src/providers/{platform}-web-auth.ts`)
+
+```typescript
+export async function loginPlatformWeb(params: {
+  onProgress: (msg: string) => void;
+  openUrl: (url: string) => Promise<boolean>;
+}): Promise<{ cookie: string; bearer: string; userAgent: string }> {
+  // Browser automation login, capture credentials
+}
+```
+
+### 2. API Client (`src/providers/{platform}-web-client.ts`)
+
+```typescript
+export class PlatformWebClient {
+  constructor(options: { cookie: string; bearer?: string }) {}
+  
+  async chatCompletions(params: ChatParams): Promise<ReadableStream> {
+    // Call platform Web API
+  }
+}
+```
+
+### 3. Stream Handler (`src/agents/{platform}-web-stream.ts`)
+
+```typescript
+export function createPlatformWebStreamFn(credentials: string): StreamFn {
+  // Handle platform-specific response format
+}
+```
+
+---
+
+## Project Structure
+
+```
+openclaw-zero-token/
+├── src/
+│   ├── providers/
+│   │   ├── deepseek-web-auth.ts      # DeepSeek login capture
+│   │   └── deepseek-web-client.ts    # DeepSeek API client
+│   ├── agents/
+│   │   └── deepseek-web-stream.ts    # Streaming response handler
+│   ├── commands/
+│   │   └── auth-choice.apply.deepseek-web.ts  # Authentication flow
+│   └── browser/
+│       └── chrome.ts                 # Chrome automation
+├── ui/                               # Web UI (Lit 3.x)
+├── .openclaw-state/                  # Local state (not committed)
+│   ├── openclaw.json                 # Configuration
+│   └── agents/main/agent/
+│       └── auth.json                 # Credentials (sensitive)
+└── .gitignore                        # Includes .openclaw-state/
+```
+
+---
+
+## Security Notes
+
+1. **Credential Storage**: Cookies and Bearer tokens are stored locally in `auth.json`, **never committed to Git**
+2. **Session Expiry**: Web sessions may expire and require periodic re-login
+3. **Rate Limits**: Web APIs may have rate limits, not suitable for high-frequency calls
+4. **Compliance**: For personal learning and research only, please comply with platform terms of service
+
+---
+
+## Syncing with Upstream
+
+This project is based on OpenClaw. Sync upstream updates with:
+
+```bash
+# Add upstream repository
+git remote add upstream https://github.com/openclaw/openclaw.git
+
+# Sync upstream updates
+git fetch upstream
+git merge upstream/main
+```
+
+---
+
+## Contributing
+
+Contributions are welcome, especially:
+- New platform Web authentication support (Doubao, Claude, ChatGPT, etc.)
+- Bug fixes
+- Documentation improvements
+
+---
+
+## License
+
+[MIT License](LICENSE)
+
+---
+
+## Acknowledgments
+
+- [OpenClaw](https://github.com/openclaw/openclaw) - The original project
+- [DeepSeek](https://deepseek.com) - Excellent AI models
+
+---
+
+## Disclaimer
+
+This project is for learning and research only. When using it to access any third-party service, please comply with that service's terms of use. The developers are not responsible for any issues arising from the use of this project.
 
 ### Requirements
 

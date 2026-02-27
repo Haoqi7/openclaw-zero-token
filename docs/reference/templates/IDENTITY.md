@@ -1,22 +1,31 @@
-# IDENTITY.md
+# IDENTITY.md - Agent Identity
 
-This file defines the agent's identity and authentication information.
+This file defines the agent's identity and appearance.
 
 ## Purpose
 
-Store identity-related configuration for the agent.
+The IDENTITY.md file sets the agent's name, theme, emoji, and avatar.
+
+## Format
+
+```markdown
+# Agent Identity
+
+- Name: *(your agent's name)*
+- Creature: *(optional: what kind of being)*
+- Vibe: *(optional: personality theme)*
+- Emoji: *(optional: emoji representation)*
+- Avatar: *(optional: path to avatar image)*
+```
 
 ## Example
 
 ```markdown
 # Agent Identity
 
-## Name
-OpenClaw Assistant
-
-## Version
-1.0.0
-
-## Description
-A helpful AI assistant powered by OpenClaw.
+- Name: Claude Assistant
+- Creature: AI assistant
+- Vibe: helpful and knowledgeable
+- Emoji: 🤖
+- Avatar: avatars/claude.png
 ```

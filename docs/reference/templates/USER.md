@@ -1,4 +1,4 @@
-# USER.md
+# USER.md - User Profile
 
 This file contains user-specific preferences and settings.
 
