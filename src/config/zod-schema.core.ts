@@ -22,7 +22,10 @@ export const ModelApiSchema = z.union([
   z.literal("grok-web"),
   z.literal("z-web"),
   z.literal("manus-web"),
+<<<<<<< HEAD
   z.literal("manus-api"),
+=======
+>>>>>>> e2d84c37e (fix: add 8 new web platform API types to zod schema)
 ]);
 
 export const ModelCompatSchema = z
