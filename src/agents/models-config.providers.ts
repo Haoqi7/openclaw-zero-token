@@ -177,6 +177,94 @@ const CLAUDE_WEB_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+export const CHATGPT_WEB_BASE_URL = "https://chatgpt.com";
+export const CHATGPT_WEB_DEFAULT_MODEL_ID = "gpt-4";
+const CHATGPT_WEB_DEFAULT_CONTEXT_WINDOW = 128000;
+const CHATGPT_WEB_DEFAULT_MAX_TOKENS = 4096;
+const CHATGPT_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const QWEN_WEB_BASE_URL = "https://chat.qwen.ai";
+export const QWEN_WEB_DEFAULT_MODEL_ID = "qwen-max";
+const QWEN_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
+const QWEN_WEB_DEFAULT_MAX_TOKENS = 8192;
+const QWEN_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const YUANBAO_WEB_BASE_URL = "https://yuanbao.tencent.com";
+export const YUANBAO_WEB_DEFAULT_MODEL_ID = "hunyuan-pro";
+const YUANBAO_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
+const YUANBAO_WEB_DEFAULT_MAX_TOKENS = 4096;
+const YUANBAO_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const KIMI_WEB_BASE_URL = "https://kimi.moonshot.cn";
+export const KIMI_WEB_DEFAULT_MODEL_ID = "moonshot-v1-32k";
+const KIMI_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
+const KIMI_WEB_DEFAULT_MAX_TOKENS = 4096;
+const KIMI_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const GEMINI_WEB_BASE_URL = "https://gemini.google.com";
+export const GEMINI_WEB_DEFAULT_MODEL_ID = "gemini-pro";
+const GEMINI_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
+const GEMINI_WEB_DEFAULT_MAX_TOKENS = 8192;
+const GEMINI_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const GROK_WEB_BASE_URL = "https://grok.com";
+export const GROK_WEB_DEFAULT_MODEL_ID = "grok-2";
+const GROK_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
+const GROK_WEB_DEFAULT_MAX_TOKENS = 4096;
+const GROK_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const Z_WEB_BASE_URL = "https://chat.z.ai";
+export const Z_WEB_DEFAULT_MODEL_ID = "glm-4";
+const Z_WEB_DEFAULT_CONTEXT_WINDOW = 128000;
+const Z_WEB_DEFAULT_MAX_TOKENS = 4096;
+const Z_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
+export const MANUS_WEB_BASE_URL = "https://manus.im";
+export const MANUS_WEB_DEFAULT_MODEL_ID = "manus-1";
+const MANUS_WEB_DEFAULT_CONTEXT_WINDOW = 32000;
+const MANUS_WEB_DEFAULT_MAX_TOKENS = 4096;
+const MANUS_WEB_DEFAULT_COST = {
+  input: 0,
+  output: 0,
+  cacheRead: 0,
+  cacheWrite: 0,
+};
+
 const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 const NVIDIA_DEFAULT_MODEL_ID = "nvidia/llama-3.1-nemotron-70b-instruct";
 const NVIDIA_DEFAULT_CONTEXT_WINDOW = 131072;
@@ -828,6 +916,256 @@ export async function buildClaudeWebProvider(params?: {
   };
 }
 
+export async function buildChatGPTWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: CHATGPT_WEB_BASE_URL,
+    api: "chatgpt-web",
+    models: [
+      {
+        id: "gpt-4",
+        name: "GPT-4 (Web)",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: CHATGPT_WEB_DEFAULT_COST,
+        contextWindow: CHATGPT_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: CHATGPT_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "gpt-4-turbo",
+        name: "GPT-4 Turbo (Web)",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: CHATGPT_WEB_DEFAULT_COST,
+        contextWindow: CHATGPT_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: CHATGPT_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "gpt-3.5-turbo",
+        name: "GPT-3.5 Turbo (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: CHATGPT_WEB_DEFAULT_COST,
+        contextWindow: 16000,
+        maxTokens: 4096,
+      },
+    ],
+  };
+}
+
+export async function buildQwenWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: QWEN_WEB_BASE_URL,
+    api: "qwen-web",
+    models: [
+      {
+        id: "qwen-max",
+        name: "Qwen Max (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: QWEN_WEB_DEFAULT_COST,
+        contextWindow: QWEN_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: QWEN_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "qwen-plus",
+        name: "Qwen Plus (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: QWEN_WEB_DEFAULT_COST,
+        contextWindow: QWEN_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: QWEN_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "qwen-turbo",
+        name: "Qwen Turbo (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: QWEN_WEB_DEFAULT_COST,
+        contextWindow: QWEN_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: QWEN_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
+export async function buildYuanbaoWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: YUANBAO_WEB_BASE_URL,
+    api: "yuanbao-web",
+    models: [
+      {
+        id: "hunyuan-pro",
+        name: "Hunyuan Pro (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: YUANBAO_WEB_DEFAULT_COST,
+        contextWindow: YUANBAO_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: YUANBAO_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "hunyuan-standard",
+        name: "Hunyuan Standard (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: YUANBAO_WEB_DEFAULT_COST,
+        contextWindow: YUANBAO_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: YUANBAO_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
+export async function buildKimiWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: KIMI_WEB_BASE_URL,
+    api: "kimi-web",
+    models: [
+      {
+        id: "moonshot-v1-8k",
+        name: "Moonshot v1 8K (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: KIMI_WEB_DEFAULT_COST,
+        contextWindow: 8000,
+        maxTokens: 4096,
+      },
+      {
+        id: "moonshot-v1-32k",
+        name: "Moonshot v1 32K (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: KIMI_WEB_DEFAULT_COST,
+        contextWindow: KIMI_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: KIMI_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "moonshot-v1-128k",
+        name: "Moonshot v1 128K (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: KIMI_WEB_DEFAULT_COST,
+        contextWindow: 128000,
+        maxTokens: 4096,
+      },
+    ],
+  };
+}
+
+export async function buildGeminiWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: GEMINI_WEB_BASE_URL,
+    api: "gemini-web",
+    models: [
+      {
+        id: "gemini-pro",
+        name: "Gemini Pro (Web)",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: GEMINI_WEB_DEFAULT_COST,
+        contextWindow: GEMINI_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: GEMINI_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "gemini-ultra",
+        name: "Gemini Ultra (Web)",
+        reasoning: false,
+        input: ["text", "image"],
+        cost: GEMINI_WEB_DEFAULT_COST,
+        contextWindow: GEMINI_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: GEMINI_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
+export async function buildGrokWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: GROK_WEB_BASE_URL,
+    api: "grok-web",
+    models: [
+      {
+        id: "grok-1",
+        name: "Grok 1 (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: GROK_WEB_DEFAULT_COST,
+        contextWindow: GROK_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: GROK_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "grok-2",
+        name: "Grok 2 (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: GROK_WEB_DEFAULT_COST,
+        contextWindow: GROK_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: GROK_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
+export async function buildZWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: Z_WEB_BASE_URL,
+    api: "z-web",
+    models: [
+      {
+        id: "glm-4",
+        name: "GLM-4 (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: Z_WEB_DEFAULT_COST,
+        contextWindow: Z_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: Z_WEB_DEFAULT_MAX_TOKENS,
+      },
+      {
+        id: "glm-3-turbo",
+        name: "GLM-3 Turbo (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: Z_WEB_DEFAULT_COST,
+        contextWindow: Z_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: Z_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
+export async function buildManusWebProvider(params?: {
+  apiKey?: string;
+}): Promise<ProviderConfig> {
+  return {
+    baseUrl: MANUS_WEB_BASE_URL,
+    api: "manus-web",
+    models: [
+      {
+        id: "manus-1",
+        name: "Manus 1 (Web)",
+        reasoning: false,
+        input: ["text"],
+        cost: MANUS_WEB_DEFAULT_COST,
+        contextWindow: MANUS_WEB_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: MANUS_WEB_DEFAULT_MAX_TOKENS,
+      },
+    ],
+  };
+}
+
 export function buildNvidiaProvider(): ProviderConfig {
   return {
     baseUrl: NVIDIA_BASE_URL,
@@ -1083,6 +1421,78 @@ export async function resolveImplicitProviders(params: {
   providers["claude-web"] = {
     ...(await buildClaudeWebProvider({ apiKey: claudeWebKey })),
     apiKey: claudeWebKey,
+  };
+
+  const chatgptWebKey =
+    resolveEnvApiKeyVarName("chatgpt-web") ??
+    resolveApiKeyFromProfiles({ provider: "chatgpt-web", store: authStore });
+
+  providers["chatgpt-web"] = {
+    ...(await buildChatGPTWebProvider({ apiKey: chatgptWebKey })),
+    apiKey: chatgptWebKey,
+  };
+
+  const qwenWebKey =
+    resolveEnvApiKeyVarName("qwen-web") ??
+    resolveApiKeyFromProfiles({ provider: "qwen-web", store: authStore });
+
+  providers["qwen-web"] = {
+    ...(await buildQwenWebProvider({ apiKey: qwenWebKey })),
+    apiKey: qwenWebKey,
+  };
+
+  const yuanbaoWebKey =
+    resolveEnvApiKeyVarName("yuanbao-web") ??
+    resolveApiKeyFromProfiles({ provider: "yuanbao-web", store: authStore });
+
+  providers["yuanbao-web"] = {
+    ...(await buildYuanbaoWebProvider({ apiKey: yuanbaoWebKey })),
+    apiKey: yuanbaoWebKey,
+  };
+
+  const kimiWebKey =
+    resolveEnvApiKeyVarName("kimi-web") ??
+    resolveApiKeyFromProfiles({ provider: "kimi-web", store: authStore });
+
+  providers["kimi-web"] = {
+    ...(await buildKimiWebProvider({ apiKey: kimiWebKey })),
+    apiKey: kimiWebKey,
+  };
+
+  const geminiWebKey =
+    resolveEnvApiKeyVarName("gemini-web") ??
+    resolveApiKeyFromProfiles({ provider: "gemini-web", store: authStore });
+
+  providers["gemini-web"] = {
+    ...(await buildGeminiWebProvider({ apiKey: geminiWebKey })),
+    apiKey: geminiWebKey,
+  };
+
+  const grokWebKey =
+    resolveEnvApiKeyVarName("grok-web") ??
+    resolveApiKeyFromProfiles({ provider: "grok-web", store: authStore });
+
+  providers["grok-web"] = {
+    ...(await buildGrokWebProvider({ apiKey: grokWebKey })),
+    apiKey: grokWebKey,
+  };
+
+  const zWebKey =
+    resolveEnvApiKeyVarName("z-web") ??
+    resolveApiKeyFromProfiles({ provider: "z-web", store: authStore });
+
+  providers["z-web"] = {
+    ...(await buildZWebProvider({ apiKey: zWebKey })),
+    apiKey: zWebKey,
+  };
+
+  const manusWebKey =
+    resolveEnvApiKeyVarName("manus-web") ??
+    resolveApiKeyFromProfiles({ provider: "manus-web", store: authStore });
+
+  providers["manus-web"] = {
+    ...(await buildManusWebProvider({ apiKey: manusWebKey })),
+    apiKey: manusWebKey,
   };
 
   return providers;

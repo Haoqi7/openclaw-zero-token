@@ -33,6 +33,14 @@ import {
 import { createDeepseekWebStreamFn } from "../../deepseek-web-stream.js";
 import { createDoubaoWebStreamFn } from "../../doubao-web-stream.js";
 import { createClaudeWebStreamFn } from "../../claude-web-stream.js";
+import { createChatGPTWebStreamFn } from "../../chatgpt-web-stream.js";
+import { createQwenWebStreamFn } from "../../qwen-web-stream.js";
+import { createYuanbaoWebStreamFn } from "../../yuanbao-web-stream.js";
+import { createKimiWebStreamFn } from "../../kimi-web-stream.js";
+import { createGeminiWebStreamFn } from "../../gemini-web-stream.js";
+import { createGrokWebStreamFn } from "../../grok-web-stream.js";
+import { createZWebStreamFn } from "../../z-web-stream.js";
+import { createManusWebStreamFn } from "../../manus-web-stream.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../defaults.js";
 import { resolveOpenClawDocsPath } from "../../docs-path.js";
 import { isTimeoutError } from "../../failover-error.js";
@@ -646,6 +654,30 @@ export async function runEmbeddedAttempt(
       } else if (params.model.api === "claude-web") {
         const auth = (await params.authStorage.getApiKey("claude-web")) || "";
         activeSession.agent.streamFn = createClaudeWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "chatgpt-web") {
+        const auth = (await params.authStorage.getApiKey("chatgpt-web")) || "";
+        activeSession.agent.streamFn = createChatGPTWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "qwen-web") {
+        const auth = (await params.authStorage.getApiKey("qwen-web")) || "";
+        activeSession.agent.streamFn = createQwenWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "yuanbao-web") {
+        const auth = (await params.authStorage.getApiKey("yuanbao-web")) || "";
+        activeSession.agent.streamFn = createYuanbaoWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "kimi-web") {
+        const auth = (await params.authStorage.getApiKey("kimi-web")) || "";
+        activeSession.agent.streamFn = createKimiWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "gemini-web") {
+        const auth = (await params.authStorage.getApiKey("gemini-web")) || "";
+        activeSession.agent.streamFn = createGeminiWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "grok-web") {
+        const auth = (await params.authStorage.getApiKey("grok-web")) || "";
+        activeSession.agent.streamFn = createGrokWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "z-web") {
+        const auth = (await params.authStorage.getApiKey("z-web")) || "";
+        activeSession.agent.streamFn = createZWebStreamFn(auth) as StreamFn;
+      } else if (params.model.api === "manus-web") {
+        const auth = (await params.authStorage.getApiKey("manus-web")) || "";
+        activeSession.agent.streamFn = createManusWebStreamFn(auth) as StreamFn;
       } else {
         // Force a stable streamFn reference so vitest can reliably mock @mariozechner/pi-ai.
         activeSession.agent.streamFn = streamSimple;

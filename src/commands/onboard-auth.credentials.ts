@@ -382,3 +382,123 @@ export async function setClaudeWebCookie(
     agentDir: resolveAuthAgentDir(agentDir),
   });
 }
+
+export async function setChatGPTWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "chatgpt-web:default",
+    credential: {
+      type: "api_key",
+      provider: "chatgpt-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setQwenWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "qwen-web:default",
+    credential: {
+      type: "api_key",
+      provider: "qwen-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setYuanbaoWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "yuanbao-web:default",
+    credential: {
+      type: "api_key",
+      provider: "yuanbao-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setKimiWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "kimi-web:default",
+    credential: {
+      type: "api_key",
+      provider: "kimi-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setGeminiWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "gemini-web:default",
+    credential: {
+      type: "api_key",
+      provider: "gemini-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setGrokWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "grok-web:default",
+    credential: {
+      type: "api_key",
+      provider: "grok-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setZWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "z-web:default",
+    credential: {
+      type: "api_key",
+      provider: "z-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
+export async function setManusWebCookie(
+  options: { cookie: string },
+  agentDir?: string,
+) {
+  upsertAuthProfile({
+    profileId: "manus-web:default",
+    credential: {
+      type: "api_key",
+      provider: "manus-web",
+      key: options.cookie,
+    },
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}

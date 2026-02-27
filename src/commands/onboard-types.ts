@@ -51,6 +51,14 @@ export type AuthChoice =
   | "deepseek-web"
   | "doubao-web"
   | "claude-web"
+  | "chatgpt-web"
+  | "qwen-web"
+  | "yuanbao-web"
+  | "kimi-web"
+  | "gemini-web"
+  | "grok-web"
+  | "z-web"
+  | "manus-web"
   | "custom-api-key"
   | "skip";
 export type AuthChoiceGroupId =
@@ -82,6 +90,14 @@ export type AuthChoiceGroupId =
   | "deepseek-web"
   | "doubao-web"
   | "claude-web"
+  | "chatgpt-web"
+  | "qwen-web"
+  | "yuanbao-web"
+  | "kimi-web"
+  | "gemini-web"
+  | "grok-web"
+  | "z-web"
+  | "manus-web"
   | "custom";
 export type GatewayAuthChoice = "token" | "password";
 export type ResetScope = "config" | "config+creds+sessions" | "full";
@@ -134,6 +150,15 @@ export type OnboardOptions = {
   siliconflowGlobalApiKey?: string;
   siliconflowCnApiKey?: string;
   deepseekWebCookie?: string;
+  doubaoWebCookie?: string;
+  chatgptWebCookie?: string;
+  qwenWebCookie?: string;
+  yuanbaoWebCookie?: string;
+  kimiWebCookie?: string;
+  geminiWebCookie?: string;
+  grokWebCookie?: string;
+  zWebCookie?: string;
+  manusWebCookie?: string;
   customBaseUrl?: string;
   customApiKey?: string;
   customModelId?: string;

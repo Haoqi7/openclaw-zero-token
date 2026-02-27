@@ -190,6 +190,54 @@ const AUTH_CHOICE_GROUP_DEFS: {
     hint: "Free access via browser session",
     choices: ["claude-web"],
   },
+  {
+    value: "chatgpt-web",
+    label: "ChatGPT Web",
+    hint: "Browser-based authentication",
+    choices: ["chatgpt-web"],
+  },
+  {
+    value: "qwen-web",
+    label: "Qwen Web",
+    hint: "Browser-based authentication",
+    choices: ["qwen-web"],
+  },
+  {
+    value: "yuanbao-web",
+    label: "Yuanbao Web (元宝)",
+    hint: "Tencent Hunyuan via browser",
+    choices: ["yuanbao-web"],
+  },
+  {
+    value: "kimi-web",
+    label: "Kimi Web",
+    hint: "Moonshot via browser",
+    choices: ["kimi-web"],
+  },
+  {
+    value: "gemini-web",
+    label: "Gemini Web",
+    hint: "Google Gemini via browser",
+    choices: ["gemini-web"],
+  },
+  {
+    value: "grok-web",
+    label: "Grok Web",
+    hint: "xAI Grok via browser",
+    choices: ["grok-web"],
+  },
+  {
+    value: "z-web",
+    label: "Z Web",
+    hint: "Browser-based authentication",
+    choices: ["z-web"],
+  },
+  {
+    value: "manus-web",
+    label: "Manus Web",
+    hint: "Browser-based authentication",
+    choices: ["manus-web"],
+  },
 ];
 
 const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
@@ -350,6 +398,46 @@ const BASE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
     value: "claude-web",
     label: "Claude Web (Free)",
     hint: "Access Claude via browser session cookie",
+  },
+  {
+    value: "chatgpt-web",
+    label: "ChatGPT Browser",
+    hint: "Access ChatGPT via browser session",
+  },
+  {
+    value: "qwen-web",
+    label: "Qwen Browser",
+    hint: "Access Qwen via browser session",
+  },
+  {
+    value: "yuanbao-web",
+    label: "Yuanbao Browser (元宝)",
+    hint: "Access Tencent Hunyuan via browser",
+  },
+  {
+    value: "kimi-web",
+    label: "Kimi Browser",
+    hint: "Access Moonshot Kimi via browser",
+  },
+  {
+    value: "gemini-web",
+    label: "Gemini Browser",
+    hint: "Access Google Gemini via browser",
+  },
+  {
+    value: "grok-web",
+    label: "Grok Browser",
+    hint: "Access xAI Grok via browser",
+  },
+  {
+    value: "z-web",
+    label: "Z Browser",
+    hint: "Access Z.AI via browser",
+  },
+  {
+    value: "manus-web",
+    label: "Manus Browser",
+    hint: "Access Manus via browser",
   },
   { value: "custom-api-key", label: "Custom Provider" },
 ];

@@ -8,7 +8,15 @@ export type ModelApi =
   | "ollama"
   | "deepseek-web"
   | "doubao-web"
-  | "claude-web";
+  | "claude-web"
+  | "chatgpt-web"
+  | "qwen-web"
+  | "yuanbao-web"
+  | "kimi-web"
+  | "gemini-web"
+  | "grok-web"
+  | "z-web"
+  | "manus-web";
 
 export type ModelCompatConfig = {
   supportsStore?: boolean;

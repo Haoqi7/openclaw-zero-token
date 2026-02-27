@@ -4,6 +4,14 @@ import type { WizardPrompter } from "../wizard/prompts.js";
 import { applyAuthChoiceAnthropic } from "./auth-choice.apply.anthropic.js";
 import { applyAuthChoiceApiProviders } from "./auth-choice.apply.api-providers.js";
 import { applyAuthChoiceClaudeWeb } from "./auth-choice.apply.claude-web.js";
+import { applyAuthChoiceChatGPTWeb } from "./auth-choice.apply.chatgpt-web.js";
+import { applyAuthChoiceQwenWeb } from "./auth-choice.apply.qwen-web.js";
+import { applyAuthChoiceYuanbaoWeb } from "./auth-choice.apply.yuanbao-web.js";
+import { applyAuthChoiceKimiWeb } from "./auth-choice.apply.kimi-web.js";
+import { applyAuthChoiceGeminiWeb } from "./auth-choice.apply.gemini-web.js";
+import { applyAuthChoiceGrokWeb } from "./auth-choice.apply.grok-web.js";
+import { applyAuthChoiceZWeb } from "./auth-choice.apply.z-web.js";
+import { applyAuthChoiceManusWeb } from "./auth-choice.apply.manus-web.js";
 import { applyAuthChoiceCopilotProxy } from "./auth-choice.apply.copilot-proxy.js";
 import { applyAuthChoiceDeepseekWeb } from "./auth-choice.apply.deepseek-web.js";
 import { applyAuthChoiceDoubaoWeb } from "./auth-choice.apply.doubao-web.js";
@@ -37,6 +45,14 @@ export type ApplyAuthChoiceParams = {
     siliconflowCnApiKey?: string;
     deepseekWebCookie?: string;
     doubaoWebCookie?: string;
+    chatgptWebCookie?: string;
+    qwenWebCookie?: string;
+    yuanbaoWebCookie?: string;
+    kimiWebCookie?: string;
+    geminiWebCookie?: string;
+    grokWebCookie?: string;
+    zWebCookie?: string;
+    manusWebCookie?: string;
   };
 };
 
@@ -63,6 +79,14 @@ export async function applyAuthChoice(
     applyAuthChoiceDeepseekWeb,
     applyAuthChoiceDoubaoWeb,
     applyAuthChoiceClaudeWeb,
+    applyAuthChoiceChatGPTWeb,
+    applyAuthChoiceQwenWeb,
+    applyAuthChoiceYuanbaoWeb,
+    applyAuthChoiceKimiWeb,
+    applyAuthChoiceGeminiWeb,
+    applyAuthChoiceGrokWeb,
+    applyAuthChoiceZWeb,
+    applyAuthChoiceManusWeb,
     applyAuthChoiceXAI,
   ];
 
