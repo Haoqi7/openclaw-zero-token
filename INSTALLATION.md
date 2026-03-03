@@ -16,10 +16,24 @@
    # 应该显示 8.x.x 或更高
    ```
 
-3. **Google Chrome** (用于调试浏览器)
+3. **pnpm** (用于构建 Web UI)
+   ```bash
+   pnpm --version
+   # 如果未安装，可执行：
+   # corepack enable
+   # corepack prepare pnpm@latest --activate
+   ```
+
+4. **Google Chrome** (用于调试浏览器)
    - macOS: 已安装
    - Linux: `sudo apt install google-chrome-stable`
    - Windows: 下载安装
+
+### Shell 环境说明（Windows 用户必读）
+
+- `onboard.sh` / `server.sh` / `start-chrome-debug.sh` 需要在 **Bash 环境**运行。
+- Windows 推荐使用 **WSL**（优先）或 **Git Bash**。
+- 纯 `cmd.exe` / 原生 PowerShell 不能直接执行 `.sh` 脚本。
 
 ### 可选软件
 
@@ -110,21 +124,23 @@ ls -lh dist/index.mjs
 
 ### 创建配置目录
 
-配置目录会在首次运行时自动创建，但你也可以手动创建：
+配置目录会在首次运行时自动创建（推荐，不需要手动创建）：
 
 ```bash
-mkdir -p .openclaw-state/agents/main/agent
+./onboard.sh
 ```
 
 ### 检查配置文件
 
 ```bash
 # 查看配置文件（如果存在）
-cat .openclaw-state/openclaw.json
+cat .openclaw-zero-state/openclaw.json
 
 # 查看认证配置（如果存在）
-cat .openclaw-state/agents/main/agent/auth-profiles.json
+cat .openclaw-zero-state/agents/main/agent/auth-profiles.json
 ```
+
+> 关键规则：只有在 `./onboard.sh` 中完成配置的平台，才会被写入 `openclaw.json` 并出现在最终 `/models` 列表中。
 
 ---
 
@@ -132,6 +148,7 @@ cat .openclaw-state/agents/main/agent/auth-profiles.json
 
 - [ ] Node.js 已安装（v22.12+）
 - [ ] npm 已安装
+- [ ] pnpm 已安装
 - [ ] 依赖已安装（`npm install`）
 - [ ] 代码已编译（`npm run build`）
 - [ ] `dist/index.mjs` 文件存在
@@ -145,7 +162,6 @@ cat .openclaw-state/agents/main/agent/auth-profiles.json
 
 1. **START_HERE.md** - 快速开始指南
 2. **TEST_STEPS.md** - 详细测试步骤
-3. **QUICK_TEST.md** - 快速测试指南
 
 ---
 

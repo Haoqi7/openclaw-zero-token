@@ -45,14 +45,16 @@ ps aux | grep "chrome.*9222" | grep -v grep
 
 在 Chrome 中打开并登录以下平台：
 
-1. **千问 (Qwen)**: https://chat.qwen.ai
-2. **Kimi**: https://kimi.moonshot.cn
-3. **Claude**: https://claude.ai
-4. **Doubao**: https://www.doubao.com/chat/
-5. **ChatGPT**: https://chatgpt.com
-6. **Gemini**: https://gemini.google.com/app
-7. **Grok**: https://grok.com
-8. **GLM Web (智谱清言)**: https://chatglm.cn
+1. **千问国际版 (Qwen International)**: https://chat.qwen.ai
+2. **千问国内版 (Qwen CN)**: https://www.qianwen.com
+3. **Kimi**: https://kimi.moonshot.cn
+4. **Claude**: https://claude.ai
+5. **Doubao**: https://www.doubao.com/chat/
+6. **ChatGPT**: https://chatgpt.com
+7. **Gemini**: https://gemini.google.com/app
+8. **Grok**: https://grok.com
+9. **GLM Web (智谱清言)**: https://chatglm.cn
+10. **GLM 国际版**: https://chat.z.ai
 
 **注意**：Manus 使用 API Key 方式认证，不需要浏览器登录。API Key 获取地址：https://open.manus.im
 
@@ -107,6 +109,11 @@ http://127.0.0.1:3001/#token=62b791625fa441be036acd3c206b7e14e2bb13c803355823
 ---
 
 ### 步骤 7：查看所有模型
+
+**关键规则（请务必注意）**：
+- `/models` 里显示的是**已完成 onboard 配置**的平台模型集合。
+- 只有你在 `./onboard.sh` 中实际选择并完成认证的平台，才会写入 `openclaw.json` 并出现在最终模型列表中。
+- 仅在浏览器里登录、但没有走完 onboard 的平台，**不会**出现在 `/models`。
 
 在 Web UI 的聊天框中输入：
 ```

@@ -74,6 +74,8 @@ npm install && npm run build && pnpm ui:build
 ./server.sh start
 ```
 
+> **Important:** Only platforms completed in `./onboard.sh` are written into `openclaw.json` and shown in `/models`.
+
 See **START_HERE.md** and **TEST_STEPS.md** for details.
 
 ---
@@ -201,7 +203,7 @@ Same 6-step flow: build → Chrome debug → login platforms → onboard → Dee
 
 ### Configuration
 
-The configuration is stored in `.openclaw-state/openclaw.json`:
+The configuration is stored in `.openclaw-zero-state/openclaw.json`:
 
 ```json
 {
@@ -246,7 +248,7 @@ See **INSTALLATION.md** and **START_HERE.md** for full setup and troubleshooting
 ## Roadmap
 
 ### Current Focus
-- ✅ DeepSeek Web, Qwen, Kimi, Claude Web, Doubao, Manus API — all **tested and working**
+- ✅ DeepSeek Web, Qwen International, Kimi, Claude Web, Doubao, Manus API — all **tested and working**
 - 🔧 Improving credential capture reliability
 - 📝 Documentation improvements
 

@@ -361,6 +361,8 @@ open http://127.0.0.1:3001
 /models
 ```
 
+> **关键规则：** 只有在 `./onboard.sh` 中完成配置的平台，才会写入 `openclaw.json` 并显示在 `/models` 列表中。
+
 这将显示：
 - 所有可用的提供商（claude-web、doubao-web、deepseek-web 等）
 - 每个提供商下的模型列表
@@ -493,7 +495,7 @@ node dist/index.mjs doctor
 ## 开发路线
 
 ### 当前重点
-- ✅ DeepSeek Web、千问国际版、Kimi、Claude Web、豆包、Manus API — **均已测试通过**
+- ✅ DeepSeek Web、千问国际版、千问国内版、Kimi、Claude Web、豆包、ChatGPT Web、Gemini Web、Grok Web、GLM Web、GLM 国际版、Manus API — **均已测试通过**
 - 🔧 提高凭证捕获可靠性
 - 📝 文档改进
 

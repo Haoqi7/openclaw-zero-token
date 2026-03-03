@@ -7,8 +7,6 @@
 
 ### 🎯 快速开始
 - **TEST_STEPS.md** - 完整测试步骤（推荐阅读）
-- **QUICK_TEST.md** - 快速测试指南
-- **README_TESTING.md** - 测试准备说明
 
 ### 📚 详细文档
 - **IMPLEMENTATION_COMPLETE.md** - 实现完成报告
@@ -41,13 +39,15 @@ pnpm ui:build   # 构建 Web UI
 ./server.sh start
 ```
 
+> **关键规则：** 只有在 `./onboard.sh` 中完成配置的平台，才会写入 `openclaw.json` 并出现在 `/models` 列表中。
+
 然后访问：http://127.0.0.1:3001/#token=62b791625fa441be036acd3c206b7e14e2bb13c803355823
 
 ---
 
 ## 📋 需要登录的平台
 
-**步骤 3**（不含 DeepSeek）：千问、Kimi、Claude、Doubao、ChatGPT 等  
+**步骤 3**（不含 DeepSeek）：千问国际版、千问国内版、Kimi、Claude、Doubao、ChatGPT、Gemini、Grok、GLM Web（智谱清言）、GLM 国际版  
 **步骤 5**（仅 DeepSeek）：https://chat.deepseek.com  
 
 **Manus API**（已测试）：在 onboard 中配置 API Key，无需浏览器登录
@@ -58,7 +58,7 @@ pnpm ui:build   # 构建 Web UI
 
 | 平台 | 状态 |
 |------|------|
-| DeepSeek、千问、Kimi、Claude Web、豆包、ChatGPT Web、Grok Web、GLM Web、Manus API、**Gemini Web** | ✅ 已测试可用 |
+| DeepSeek、千问国际版、千问国内版、Kimi、Claude Web、豆包、ChatGPT Web、Gemini Web、Grok Web、GLM Web、GLM 国际版、Manus API | ✅ 已测试可用 |
 
 ---
 
@@ -66,7 +66,7 @@ pnpm ui:build   # 构建 Web UI
 
 测试完成后，你将拥有：
 
-- ✅ 11 个可用的 Web 平台
+- ✅ 12 个可用的平台（含 11 个 Web 平台 + Manus API）
 - ✅ 28+ 个可选的 AI 模型
 - ✅ 完全免费的 AI 对话服务
 - ✅ 统一的浏览器方案
@@ -108,34 +108,38 @@ npm run build
 ./server.sh start
 ```
 
+> **Important:** Only platforms completed in `./onboard.sh` are written into `openclaw.json` and shown in `/models`.
+
 Then visit: http://127.0.0.1:3001/#token=62b791625fa441be036acd3c206b7e14e2bb13c803355823
 
 #### Platforms to Login
 
-**✅ Tested (recommended first)**  
-1. https://chat.deepseek.com  
-2. https://chat.qwen.ai  
+**Step 3 (exclude DeepSeek)**  
+1. https://chat.qwen.ai  
+2. https://www.qianwen.com  
 3. https://kimi.moonshot.cn  
+4. https://claude.ai  
+5. https://www.doubao.com/chat/  
+6. https://chatgpt.com  
+7. https://gemini.google.com/app  
+8. https://grok.com  
+9. https://chatglm.cn  
+10. https://chat.z.ai/
 
-**Others (untested)**  
-4. https://chatgpt.com  
-5. https://claude.ai  
-6. https://www.doubao.com/chat/  
-8. https://gemini.google.com/app  
-9. https://grok.com
-10. https://chatglm.cn
+**Step 5 (DeepSeek only)**  
+11. https://chat.deepseek.com
 
 #### Test Status
 
 | Platform | Status |
 |----------|--------|
-| DeepSeek, Qwen, Kimi, Claude Web, Doubao, ChatGPT Web, Grok Web, GLM Web, Manus API, Gemini Web | ✅ Tested |
+| DeepSeek, Qwen International, Qwen CN, Kimi, Claude Web, Doubao, ChatGPT Web, Gemini Web, Grok Web, GLM Web, GLM International, Manus API | ✅ Tested |
 
 #### Expected Results
 
 After testing, you will have:
 
-- ✅ 11 available Web platforms
+- ✅ 12 available platforms (11 Web platforms + Manus API)
 - ✅ 28+ selectable AI models
 - ✅ Completely free AI conversation service
 - ✅ Unified browser approach
