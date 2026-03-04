@@ -47,6 +47,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: false
+          tags: openclaw-zero-token:${{ steps.meta.outputs.version }}
           outputs: type=docker,dest=${{ steps.meta.outputs.filename }}
 
       - name: Compress image to tar.gz
