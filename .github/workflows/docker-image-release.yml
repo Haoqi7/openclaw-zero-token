@@ -49,6 +49,8 @@ jobs:
           push: false
           tags: openclaw-zero-token:${{ steps.meta.outputs.version }}
           outputs: type=docker,dest=${{ steps.meta.outputs.filename }}
+          provenance: false
+          sbom: false
 
       - name: Compress image to tar.gz
         shell: bash
@@ -69,6 +71,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          pattern: "openclaw-zero-token-*"
           merge-multiple: true
 
       - name: Create GitHub Release
