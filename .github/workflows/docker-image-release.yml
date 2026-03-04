@@ -1,0 +1,89 @@
+name: Docker Image Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Resolve version and arch
+        id: meta
+        shell: bash
+        run: |
+          version="${{ github.ref_name }}"
+          platform="${{ matrix.platform }}"
+          arch="${platform#linux/}"
+          filename="openclaw-zero-token-${arch}-${version}.tar"
+          gz_filename="openclaw-zero-token-${arch}-${version}.tar.gz"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "arch=${arch}" >> "$GITHUB_OUTPUT"
+          echo "filename=${filename}" >> "$GITHUB_OUTPUT"
+          echo "gz_filename=${gz_filename}" >> "$GITHUB_OUTPUT"
+
+      - name: Build Docker image and export
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          push: false
+          outputs: type=docker,dest=${{ steps.meta.outputs.filename }}
+
+      - name: Compress image to tar.gz
+        shell: bash
+        run: gzip "${{ steps.meta.outputs.filename }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.gz_filename }}
+          path: ${{ steps.meta.outputs.gz_filename }}
+
+  release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            ## How to load Docker image
+
+            ```bash
+            # amd64
+            docker load -i openclaw-zero-token-amd64-${{ github.ref_name }}.tar.gz
+
+            # arm64
+            docker load -i openclaw-zero-token-arm64-${{ github.ref_name }}.tar.gz
+            ```
+          files: artifacts/*
